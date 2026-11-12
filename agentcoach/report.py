@@ -1,149 +1,13 @@
-"""Self-contained HTML report: no CDN, no JS framework, opens from disk."""
+"""Self-contained HTML report: one screen, four tabs, no CDN, opens from disk.
+
+Python only serialises the data; the page builds the views (overview, coaching,
+conversations, trend) with a small vanilla-JS app so nothing has to scroll the
+whole page. Each pane scrolls on its own, and on phones the list/detail panes
+stack with a back button.
+"""
 from __future__ import annotations
 
-import html
-import math
-from datetime import datetime
-
-E = lambda s: html.escape(str(s or ""))  # noqa: E731
-
-
-def _fmt_date(iso: str) -> str:
-    try:
-        return datetime.fromisoformat(iso).strftime("%Y-%m-%d")
-    except (ValueError, TypeError):
-        return iso[:10] if iso else ""
-
-
-# ----------------------------------------------------------------- charts
-
-def radar_svg(rubric: dict, cur: dict, prev: dict | None, size: int = 360) -> str:
-    dims = rubric["dimensions"]
-    n = len(dims)
-    cx = cy = size / 2
-    r = size / 2 - 64
-
-    def pt(i, v):
-        a = -math.pi / 2 + 2 * math.pi * i / n
-        return cx + r * v / 100 * math.cos(a), cy + r * v / 100 * math.sin(a)
-
-    parts = [f'<svg viewBox="0 0 {size} {size}" class="radar" role="img" aria-label="항목별 점수 레이더 차트">']
-    for ring in (25, 50, 75, 100):
-        pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in (pt(i, ring) for i in range(n)))
-        parts.append(f'<polygon points="{pts}" class="grid"/>')
-    for i, d in enumerate(dims):
-        x, y = pt(i, 100)
-        parts.append(f'<line x1="{cx}" y1="{cy}" x2="{x:.1f}" y2="{y:.1f}" class="grid"/>')
-        lx, ly = pt(i, 122)
-        anchor = "middle" if abs(lx - cx) < 8 else ("start" if lx > cx else "end")
-        v = cur["dimensions"][d["id"]]["score"]
-        parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" class="axis-label">'
-                     f'{E(d["short"])}<tspan class="axis-val" x="{lx:.1f}" dy="1.2em">{"–" if v is None else v}</tspan></text>')
-
-    def poly(run, cls):
-        vals = [run["dimensions"][d["id"]]["score"] for d in dims]
-        pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in (pt(i, v or 0) for i, v in enumerate(vals)))
-        out = [f'<polygon points="{pts}" class="{cls}"/>']
-        if cls == "cur":
-            for i, (d, v) in enumerate(zip(dims, vals)):
-                if v is None:
-                    continue
-                x, y = pt(i, v)
-                out.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" class="cur-dot">'
-                           f'<title>{E(d["name"])}: {v}점</title></circle>')
-        return "".join(out)
-
-    if prev:
-        parts.append(poly(prev, "prev"))
-    parts.append(poly(cur, "cur"))
-    parts.append("</svg>")
-    return "".join(parts)
-
-
-def spark_svg(points: list[tuple[str, int | None]], w: int = 220, h: int = 64) -> str:
-    pts = [(lbl, v) for lbl, v in points if v is not None]
-    if not pts:
-        return '<div class="muted small">기록 없음</div>'
-    pad = 8
-    n = len(pts)
-    xs = [pad + (w - 2 * pad) * (i / (n - 1) if n > 1 else 0.5) for i in range(n)]
-    ys = [h - pad - (h - 2 * pad) * v / 100 for _, v in pts]
-    parts = [f'<svg viewBox="0 0 {w} {h}" class="spark" role="img" aria-label="회차별 점수 추이">',
-             f'<line x1="{pad}" y1="{h - pad}" x2="{w - pad}" y2="{h - pad}" class="grid"/>',
-             f'<line x1="{pad}" y1="{h / 2}" x2="{w - pad}" y2="{h / 2}" class="grid dashed"/>']
-    if n > 1:
-        parts.append('<polyline class="trend" points="' + " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys)) + '"/>')
-    for (lbl, v), x, y in zip(pts, xs, ys):
-        parts.append(f'<g class="hit"><circle cx="{x:.1f}" cy="{y:.1f}" r="12" class="hit-area"/>'
-                     f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" class="cur-dot"/>'
-                     f'<title>{E(lbl)}: {v}점</title></g>')
-    parts.append("</svg>")
-    return "".join(parts)
-
-
-# ----------------------------------------------------------------- page
-
-CSS = """
-:root{color-scheme:light;--bg:#f6f5f2;--surface:#fcfcfb;--line:#e4e2dc;--grid:#dcd9d2;
---text:#0b0b0b;--text2:#52514e;--muted:#7a7873;--accent:#2a78d6;--accent-soft:rgba(42,120,214,.14);
---prev:#9a978f;--good-bg:#e7f3ea;--good:#1f6b33;--bad-bg:#fbe9e7;--bad:#9b2c1f;--code:#f0eee9}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#121211;--surface:#1a1a19;
---line:#2c2b29;--grid:#3a3936;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8d86;--accent:#3987e5;--accent-soft:rgba(57,135,229,.2);
---prev:#77756e;--good-bg:#17301f;--good:#8fd6a3;--bad-bg:#3a1c18;--bad:#f1a397;--code:#232321}}
-:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--line:#2c2b29;--grid:#3a3936;--text:#f0efec;
---text2:#c3c2b7;--muted:#8f8d86;--accent:#3987e5;--accent-soft:rgba(57,135,229,.2);--prev:#77756e;--good-bg:#17301f;
---good:#8fd6a3;--bad-bg:#3a1c18;--bad:#f1a397;--code:#232321}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);
-font:15px/1.6 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
-main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
-h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}h2{font-size:19px;margin:40px 0 12px}h3{font-size:16px;margin:0}
-.muted{color:var(--muted)}.small{font-size:13px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
-.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;margin-top:20px}
-@media (max-width:760px){.hero{grid-template-columns:1fr}}
-.score-big{font-size:64px;font-weight:700;line-height:1;letter-spacing:-.03em}
-.delta{display:inline-block;font-size:14px;font-weight:600;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
-.delta.up{background:var(--good-bg);color:var(--good)}.delta.down{background:var(--bad-bg);color:var(--bad)}.delta.flat{background:var(--code);color:var(--text2)}
-.legend{display:flex;gap:16px;font-size:13px;color:var(--text2);margin-top:8px}
-.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
-svg .grid{fill:none;stroke:var(--grid);stroke-width:1}svg .dashed{stroke-dasharray:3 3}
-svg .cur{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
-svg .prev{fill:none;stroke:var(--prev);stroke-width:2;stroke-dasharray:5 4}
-svg .cur-dot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
-svg .trend{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-svg .hit-area{fill:transparent}svg .hit:hover .cur-dot{r:6}
-.axis-label{font-size:12px;fill:var(--text2);font-weight:600}.axis-val{font-weight:400;fill:var(--muted)}
-.radar{width:100%;max-width:380px;display:block;margin:0 auto}.spark{width:100%;height:64px;display:block}
-.focus li{margin:6px 0}
-.dims{display:grid;gap:16px}
-.dim-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
-.dim-score{font-size:28px;font-weight:700}.bar{height:6px;background:var(--code);border-radius:99px;overflow:hidden;margin:10px 0}
-.bar>span{display:block;height:100%;background:var(--accent);border-radius:99px}
-.guide{font-size:13px;color:var(--text2);border-left:3px solid var(--line);padding-left:10px;margin:10px 0}
-.guide a{color:var(--accent)}
-.ex{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}@media (max-width:760px){.ex{grid-template-columns:1fr}}
-.ex>div{border-radius:10px;padding:10px 12px;font-size:14px;white-space:pre-wrap;word-break:break-word}
-.ex .before{background:var(--bad-bg)}.ex .after{background:var(--good-bg)}
-.ex b{display:block;font-size:12px;margin-bottom:4px;color:var(--text2)}
-.why{font-size:13px;color:var(--text2);margin-top:6px}
-.meta{font-size:12px;color:var(--muted);margin-top:4px}
-details{margin-top:10px}summary{cursor:pointer;color:var(--text2);font-size:14px}
-table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--text2);font-weight:600}td.num{text-align:center;font-variant-numeric:tabular-nums}
-.tbl{overflow-x:auto}
-.trends{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.trends .card{padding:14px}
-footer{margin-top:48px;font-size:12px;color:var(--muted)}
-"""
-
-
-def _delta(cur, prev):
-    if cur is None or prev is None:
-        return ""
-    d = cur - prev
-    cls = "up" if d > 0 else "down" if d < 0 else "flat"
-    sign = "+" if d > 0 else ""
-    return f'<span class="delta {cls}">지난번 대비 {sign}{d}</span>'
+import json
 
 
 def _normalize(runs: list[dict], rubric: dict) -> None:
@@ -154,125 +18,375 @@ def _normalize(runs: list[dict], rubric: dict) -> None:
             dims.setdefault(d["id"], {"score": None, "n": 0, "missed": 0})
 
 
+def _payload(runs: list[dict], rubric: dict) -> dict:
+    slim_runs = [{k: r.get(k) for k in ("created", "overall", "dimensions", "judge", "session_count", "sources")}
+                 | {"rubric_version": r.get("rubric", {}).get("version", 1)} for r in runs]
+    cur = runs[-1]
+    return {
+        "rubric": {
+            "title": rubric["title"], "version": rubric.get("version", 1),
+            "sources": rubric["sources"],
+            "dimensions": [{k: d.get(k) for k in ("id", "name", "short", "summary", "guide", "example")}
+                           for d in rubric["dimensions"]],
+        },
+        "runs": slim_runs,
+        "current": {k: cur.get(k) for k in ("created", "overall", "judge", "session_count", "sources", "sessions")},
+    }
+
+
 def render(runs: list[dict], rubric: dict) -> str:
     _normalize(runs, rubric)
-    cur = runs[-1]
-    prev = runs[-2] if len(runs) > 1 else None
-    dims = rubric["dimensions"]
-    src_names = {"claude": "Claude Code", "codex": "Codex"}
-    sources = ", ".join(src_names.get(s, s) for s in cur.get("sources", [])) or "-"
+    data = json.dumps(_payload(runs, rubric), ensure_ascii=False).replace("</", "<\\/")
+    return TEMPLATE.replace("/*__DATA__*/null", data)
 
-    scored = [(d, cur["dimensions"][d["id"]]) for d in dims if cur["dimensions"][d["id"]]["score"] is not None]
-    weakest = sorted(scored, key=lambda x: x[1]["score"])[:3]
-    strongest = sorted(scored, key=lambda x: -x[1]["score"])[:1]
 
-    # coaching examples per dimension (judge rewrites first, then missed excerpts)
-    coach: dict[str, list] = {d["id"]: [] for d in dims}
-    missed: dict[str, list] = {d["id"]: [] for d in dims}
-    for s in cur["sessions"]:
-        for c in s.get("coaching", []):
-            coach.setdefault(c["dimension"], []).append({**c, "session": s})
-        for did, v in s["dimensions"].items():
-            if v.get("score") == 0:
-                missed.setdefault(did, []).append({**v, "session": s})
+TEMPLATE = r"""<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 코치 리포트</title>
+<style>
+:root{color-scheme:light;--bg:#f4f3ef;--surface:#fcfcfb;--surface2:#f0eee9;--line:#e2e0d9;--grid:#dcd9d2;
+--text:#0b0b0b;--text2:#52514e;--muted:#7a7873;--accent:#2a78d6;--accent-soft:rgba(42,120,214,.13);
+--prev:#9a978f;--good-bg:#e5f2e8;--good:#1f6b33;--bad-bg:#fae8e5;--bad:#9b2c1f;--warn:#8a5a00;--warn-bg:#fbf0d9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#111110;--surface:#1a1a19;
+--surface2:#232321;--line:#2e2d2a;--grid:#3a3936;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8d86;--accent:#3987e5;
+--accent-soft:rgba(57,135,229,.2);--prev:#77756e;--good-bg:#16301e;--good:#8fd6a3;--bad-bg:#3a1c18;--bad:#f1a397;--warn:#f0c46a;--warn-bg:#352a12}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#111110;--surface:#1a1a19;--surface2:#232321;--line:#2e2d2a;--grid:#3a3936;
+--text:#f0efec;--text2:#c3c2b7;--muted:#8f8d86;--accent:#3987e5;--accent-soft:rgba(57,135,229,.2);--prev:#77756e;
+--good-bg:#16301e;--good:#8fd6a3;--bad-bg:#3a1c18;--bad:#f1a397;--warn:#f0c46a;--warn-bg:#352a12}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.55 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit}
+a{color:var(--accent)}
+.muted{color:var(--muted)}.small{font-size:12px}
+/* top bar */
+header{display:flex;align-items:center;gap:16px;padding:10px 20px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.brand{font-weight:700;font-size:15px;white-space:nowrap}
+.kpi{display:flex;align-items:baseline;gap:6px}
+.kpi b{font-size:22px;letter-spacing:-.02em}
+.meta{color:var(--muted);font-size:12px;flex:1;min-width:160px}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 10px;cursor:pointer}
+nav.tabs{display:flex;gap:2px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{border:0;background:none;padding:10px 14px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+main{flex:1;min-height:0;padding:16px 20px}
+.view{height:100%;display:none}
+.view.on{display:grid}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-height:0}
+.scroll{overflow:auto}
+h2{font-size:15px;margin:0 0 10px}h3{font-size:14px;margin:0}
+/* overview */
+#v-overview{grid-template-columns:minmax(240px,1fr) minmax(300px,1.3fr) minmax(260px,1.1fr);gap:16px}
+.big{font-size:56px;font-weight:700;line-height:1;letter-spacing:-.03em}
+.delta{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.delta.up{background:var(--good-bg);color:var(--good)}.delta.down{background:var(--bad-bg);color:var(--bad)}.delta.flat{background:var(--surface2);color:var(--text2)}
+.focus{margin:8px 0 0;padding-left:18px}.focus li{margin:8px 0}
+.focus button{all:unset;cursor:pointer;font-weight:600;color:var(--text)}.focus button:hover{color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.tiles button{all:unset;cursor:pointer;background:var(--surface2);border-radius:10px;padding:10px;text-align:left}
+.tiles button:hover{outline:1px solid var(--line)}
+.tiles b{display:block;font-size:22px;line-height:1.2}.tiles span{font-size:12px;color:var(--text2)}
+.radar{width:100%;height:100%;max-height:440px;display:block}
+.grid{fill:none;stroke:var(--grid);stroke-width:1}
+.cur{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
+.prev{fill:none;stroke:var(--prev);stroke-width:2;stroke-dasharray:5 4}
+.dot{fill:var(--accent);stroke:var(--surface);stroke-width:2;cursor:pointer}
+.axis{font-size:11px;fill:var(--text2);font-weight:600;cursor:pointer}.axis tspan{font-weight:400;fill:var(--muted)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--text2);justify-content:center}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.barlist{list-style:none;margin:0;padding:0}
+.barlist li{display:grid;grid-template-columns:1fr 34px;gap:2px 10px;align-items:center;padding:7px 8px;border-radius:8px;cursor:pointer}
+.barlist li:hover,.barlist li[aria-current="true"]{background:var(--surface2)}
+.barlist .nm{font-size:13px}.barlist .sc{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.bar{grid-column:1/-1;height:5px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);border-radius:99px}
+.barlist li[aria-current="true"] .bar{background:var(--bg)}
+.na{color:var(--muted);font-weight:400}
+/* master-detail */
+.md{grid-template-columns:minmax(240px,320px) 1fr;gap:16px}
+.md>.card{display:flex;flex-direction:column}
+.list{flex:1;min-height:0}
+.detail{overflow:auto}
+.back{display:none}
+.chip{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;background:var(--surface2);color:var(--text2);margin-right:4px}
+.guide{font-size:13px;color:var(--text2);border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ex>div{border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-break:break-word}
+.ex .before{background:var(--bad-bg)}.ex .after{background:var(--good-bg)}
+.ex b{display:block;font-size:11px;margin-bottom:4px;color:var(--text2)}
+.why{font-size:13px;color:var(--text2);margin-top:6px}
+.sess{font-size:12px;color:var(--muted);margin-top:4px}
+.coach{padding:12px 0;border-top:1px solid var(--line)}.coach:first-of-type{border-top:0}
+details{margin-top:12px}summary{cursor:pointer;color:var(--text2)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--text2);font-weight:600}
+.slist{list-style:none;margin:0;padding:0}
+.slist li{padding:9px 8px;border-radius:8px;cursor:pointer;border-bottom:1px solid var(--line)}
+.slist li:hover,.slist li[aria-current="true"]{background:var(--surface2)}
+.marks{font-family:ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:2px;color:var(--text2)}
+.toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.toolbar input,.toolbar select{flex:1;min-width:120px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font:inherit;color:inherit}
+.score-row{display:grid;grid-template-columns:110px 44px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);align-items:start}
+.pill{font-size:12px;font-weight:600;text-align:center;border-radius:6px;padding:1px 0}
+.p2{background:var(--good-bg);color:var(--good)}.p1{background:var(--warn-bg);color:var(--warn)}.p0{background:var(--bad-bg);color:var(--bad)}.pn{background:var(--surface2);color:var(--muted)}
+/* trend */
+#v-trend{grid-template-rows:auto 1fr;gap:16px}
+.trends{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;align-content:start}
+.trends .card{padding:12px}
+.spark{width:100%;height:56px;display:block}
+.trend{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.note{font-size:12px;color:var(--muted);margin:0}
+/* responsive */
+@media (max-width:1100px){#v-overview{grid-template-columns:1fr 1fr}#v-overview .c-dims{grid-column:1/-1}}
+@media (max-width:760px){
+ body{overflow:auto;height:auto}
+ header{padding:10px 16px;gap:10px}
+ main{padding:12px 16px}
+ .view.on{display:block}
+ .view>.card,.view>.trends{margin-bottom:12px}
+ #v-overview .c-radar{min-height:340px}
+ .md>.card{max-height:none}
+ .md.showing .c-list{display:none}
+ .md:not(.showing) .c-detail{display:none}
+ .back{display:inline-block;margin-bottom:10px}
+ .ex{grid-template-columns:1fr}
+ .score-row{grid-template-columns:96px 40px 1fr}
+}
+</style></head>
+<body>
+<header>
+ <div class="brand">agent-coach</div>
+ <div class="kpi"><span class="muted small">종합</span><b id="kpi-score">–</b><span class="muted small">/100</span><span id="kpi-delta"></span></div>
+ <div class="meta" id="meta"></div>
+ <button class="iconbtn" id="theme" title="밝게/어둡게">◐</button>
+</header>
+<nav class="tabs" role="tablist">
+ <button role="tab" data-tab="overview">개요</button>
+ <button role="tab" data-tab="coach">항목별 코칭</button>
+ <button role="tab" data-tab="sessions">대화별 결과</button>
+ <button role="tab" data-tab="trend">회차별 변화</button>
+</nav>
+<main>
+ <section class="view" id="v-overview">
+  <div class="card scroll">
+   <h2>이번 주기에 집중할 것</h2>
+   <ol class="focus" id="focus"></ol>
+   <p class="small muted" id="best"></p>
+   <div class="tiles" id="tiles"></div>
+   <p class="small muted" id="about"></p>
+  </div>
+  <div class="card c-radar" style="display:flex;flex-direction:column">
+   <h2>항목별 점수</h2>
+   <div style="flex:1;min-height:0" id="radar"></div>
+   <div class="legend" id="legend"></div>
+  </div>
+  <div class="card scroll c-dims">
+   <h2>약한 순서 <span class="muted small">눌러서 코칭 보기</span></h2>
+   <ul class="barlist" id="ov-dims"></ul>
+  </div>
+ </section>
 
-    h = [f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>AI 코치 리포트</title>
-<style>{CSS}</style></head><body><main>
-<p class="muted small">agent-coach · {E(_fmt_date(cur['created']))} 채점 · {E(sources)} · 대화 {cur['session_count']}개 · 채점기 {E(cur['judge'])}</p>
-<h1>나의 AI 지시 습관 리포트</h1>
-<p class="muted">Anthropic·OpenAI 공식 가이드가 권하는 습관을 실제 내 대화에서 얼마나 지켰는지 봅니다.</p>
-<section class="hero">
-<div class="card"><div class="muted small">종합 점수</div>
-<div><span class="score-big">{cur['overall'] if cur['overall'] is not None else '–'}</span>
-<span class="muted">/ 100</span>{_delta(cur['overall'], prev and prev['overall'])}</div>
-<h3 style="margin-top:20px">이번 주기에 집중할 것</h3><ol class="focus">"""]
-    for d, v in weakest:
-        h.append(f'<li><b>{E(d["name"])}</b> {v["score"]}점 — {E(d["summary"])}</li>')
-    h.append("</ol>")
-    if strongest:
-        d, v = strongest[0]
-        h.append(f'<p class="small muted">가장 잘하는 것: <b>{E(d["name"])}</b> ({v["score"]}점)</p>')
-    h.append(f'</div><div class="card">{radar_svg(rubric, cur, prev)}<div class="legend">'
-             f'<span><i style="background:var(--accent)"></i>이번 ({E(_fmt_date(cur["created"]))})</span>')
-    if prev:
-        h.append(f'<span><i style="background:var(--prev)"></i>지난번 ({E(_fmt_date(prev["created"]))})</span>')
-    h.append("</div></div></section>")
+ <section class="view md" id="v-coach">
+  <div class="card c-list"><h2>항목</h2><ul class="barlist list scroll" id="coach-list"></ul></div>
+  <div class="card c-detail detail" id="coach-detail"></div>
+ </section>
 
-    # trends
-    h.append('<h2>회차별 변화</h2>')
-    versions = sorted({r.get("rubric", {}).get("version", 1) for r in runs})
-    if len(versions) > 1:
-        h.append(f'<p class="muted small">회차마다 채점표 버전이 다릅니다(v{", v".join(map(str, versions))}). '
-                 '새로 생긴 항목은 이전 회차에 점수가 없고, 종합 점수도 항목 수가 달라 그대로 비교하기 어렵습니다.</p>')
-    if len(runs) < 2:
-        h.append('<p class="muted small">아직 첫 회차입니다. 1~2주 뒤 <code>agent-coach run</code>을 다시 돌리면 그동안의 대화만 새로 채점해 변화를 그려 줍니다.</p>')
-    h.append('<div class="trends">')
-    series = [("종합", [(_fmt_date(r["created"]), r.get("overall")) for r in runs])]
-    series += [(d["name"], [(_fmt_date(r["created"]), r["dimensions"].get(d["id"], {}).get("score")) for r in runs]) for d in dims]
-    for name, pts in series:
-        last = next((v for _, v in reversed(pts) if v is not None), None)
-        h.append(f'<div class="card"><div class="dim-head"><h3>{E(name)}</h3><span class="muted small">{"–" if last is None else last}</span></div>{spark_svg(pts)}</div>')
-    h.append("</div>")
+ <section class="view md" id="v-sessions">
+  <div class="card c-list">
+   <div class="toolbar"><input id="q" type="search" placeholder="대화 검색"><select id="filter"></select></div>
+   <ul class="slist list scroll" id="sess-list"></ul>
+  </div>
+  <div class="card c-detail detail" id="sess-detail"></div>
+ </section>
 
-    # dimension cards
-    h.append('<h2>항목별 코칭</h2><div class="dims">')
-    order = sorted(dims, key=lambda d: (cur["dimensions"][d["id"]]["score"] is None, cur["dimensions"][d["id"]]["score"] or 0))
-    for d in order:
-        v = cur["dimensions"][d["id"]]
-        pv = prev["dimensions"].get(d["id"], {}).get("score") if prev else None
-        sc = v["score"]
-        h.append(f'<article class="card" id="{E(d["id"])}"><div class="dim-head"><div><h3>{E(d["name"])}</h3>'
-                 f'<div class="small muted">{E(d["summary"])}</div></div>'
-                 f'<div><span class="dim-score">{"–" if sc is None else sc}</span>{_delta(sc, pv)}</div></div>'
-                 f'<div class="bar"><span style="width:{sc or 0}%"></span></div>'
-                 f'<div class="small muted">해당 대화 {v["n"]}개 중 빠뜨림 {v["missed"]}개</div>')
-        for g in d["guide"]:
-            src = rubric["sources"][g["source"]]
-            h.append(f'<div class="guide">{E(g["quote_ko"])}<br><a href="{E(src["url"])}" target="_blank" rel="noopener">{E(src["title"])} · {E(g["section"])}</a></div>')
-        exs = coach.get(d["id"], [])[:3]
-        if exs:
-            h.append('<div class="small" style="margin-top:12px;font-weight:600">내 대화에서 고쳐 쓰기</div>')
-            for c in exs:
-                s = c["session"]
-                h.append(f'<div class="ex"><div class="before"><b>실제로 쓴 지시 (turn {c["turn"]})</b>{E(c["original"])}</div>'
-                         f'<div class="after"><b>이렇게 썼다면</b>{E(c["better"])}</div></div>'
-                         f'<div class="why">{E(c["why"])}</div>'
-                         f'<div class="meta">{E(src_names.get(s["source"], s["source"]))} · {E(s["project"])} · {E(_fmt_date(s["ended"]))} · {E(s["task_summary"])}</div>')
-        else:
-            ex = d.get("example") or {}
-            if ex:
-                h.append('<div class="small" style="margin-top:12px;font-weight:600">가이드 예시</div>'
-                         f'<div class="ex"><div class="before"><b>대신에</b>{E(ex["before"])}</div>'
-                         f'<div class="after"><b>이렇게</b>{E(ex["after"])}</div></div>')
-        ms = missed.get(d["id"], [])
-        if ms:
-            h.append(f'<details><summary>빠뜨린 대화 {len(ms)}개 보기</summary><table><tr><th>날짜</th><th>대화</th><th>근거</th></tr>')
-            for m in ms[:10]:
-                s = m["session"]
-                note = m.get("note") or ""
-                exc = m.get("excerpt") or ""
-                h.append(f'<tr><td>{E(_fmt_date(s["ended"]))}</td><td>{E(s["task_summary"])}<div class="meta">{E(s["project"])}</div></td>'
-                         f'<td>{E(note)}{"<div class=meta>“" + E(exc) + "”</div>" if exc else ""}</td></tr>')
-            h.append("</table></details>")
-        h.append("</article>")
-    h.append("</div>")
+ <section class="view" id="v-trend">
+  <p class="note" id="trend-note"></p>
+  <div class="trends scroll" id="trends"></div>
+ </section>
+</main>
+<script id="data" type="application/json">/*__DATA__*/null</script>
+<script>
+(() => {
+const D = JSON.parse(document.getElementById("data").textContent);
+const dims = D.rubric.dimensions, runs = D.runs, cur = runs[runs.length - 1], prev = runs.length > 1 ? runs[runs.length - 2] : null;
+const sessions = D.current.sessions || [];
+const SRC = {claude: "Claude Code", codex: "Codex"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const day = s => (s || "").slice(0, 10);
+const sc = id => cur.dimensions[id] ? cur.dimensions[id].score : null;
+const delta = (a, b) => (a == null || b == null) ? "" :
+  `<span class="delta ${a > b ? "up" : a < b ? "down" : "flat"}">${a > b ? "+" : ""}${a - b}</span>`;
+const pill = v => `<span class="pill ${v == null ? "pn" : "p" + v}">${v == null ? "–" : ["빠뜨림", "부분", "잘함"][v]}</span>`;
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
-    # session table (also the table view of the chart data)
-    h.append('<h2>채점한 대화</h2><div class="card tbl"><table><tr><th>날짜</th><th>도구</th><th>대화</th>')
-    for d in dims:
-        h.append(f'<th title="{E(d["name"])}">{E(d["short"])}</th>')
-    h.append("</tr>")
-    marks = {0: "✗", 1: "△", 2: "○", None: "·"}
-    for s in cur["sessions"]:
-        h.append(f'<tr><td>{E(_fmt_date(s["ended"]))}</td><td>{E(src_names.get(s["source"], s["source"]))}</td>'
-                 f'<td>{E(s["task_summary"])}<div class="meta">{E(s["project"])} · {s["turns"]}턴</div></td>')
-        for d in dims:
-            v = s["dimensions"].get(d["id"], {})
-            h.append(f'<td class="num" title="{E(v.get("note", ""))}">{marks.get(v.get("score"), "·")}</td>')
-        h.append("</tr>")
-    h.append('</table><p class="small muted">○ 잘함 · △ 부분 · ✗ 빠뜨림 · · 해당 없음. 칸에 마우스를 올리면 근거가 보입니다.</p></div>')
+/* ---------- header ---------- */
+$("#kpi-score").textContent = cur.overall ?? "–";
+$("#kpi-delta").innerHTML = prev && prev.rubric_version === cur.rubric_version ? delta(cur.overall, prev.overall) : "";
+$("#meta").textContent = `${day(D.current.created)} 채점 · ${(D.current.sources || []).map(s => SRC[s] || s).join(", ")} · 대화 ${D.current.session_count}개 · ${D.current.judge} · 채점표 v${D.rubric.version}`;
+const theme = store.get("ac-theme"); if (theme) document.documentElement.dataset.theme = theme;
+$("#theme").onclick = () => {
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = dark ? "light" : "dark"; store.set("ac-theme", document.documentElement.dataset.theme);
+};
 
-    h.append(f'<footer>모든 분석은 이 컴퓨터에서 이뤄졌고 결과는 <code>~/.agent-coach/</code>에만 저장됩니다. '
-             f'채점표: {E(rubric["title"])} (v{rubric.get("version", 1)}).</footer></main></body></html>')
-    return "".join(h)
+/* ---------- routing ---------- */
+const views = ["overview", "coach", "sessions", "trend"];
+function go(tab, arg, push = true) {
+  if (!views.includes(tab)) tab = "overview";
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + tab));
+  if (tab === "coach") showDim(arg || state.dim, !!arg);
+  if (tab === "sessions") showSession(arg || state.sess, !!arg);
+  if (push) history.replaceState(null, "", "#" + tab + (arg ? "/" + arg : ""));
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".md").forEach(m => m.classList.remove("showing")); go(b.dataset.tab);
+});
+const state = {dim: null, sess: null};
+
+/* ---------- overview ---------- */
+const ranked = dims.filter(d => sc(d.id) != null).sort((a, b) => sc(a.id) - sc(b.id));
+const unscored = dims.filter(d => sc(d.id) == null);
+$("#focus").innerHTML = ranked.slice(0, 3).map(d =>
+  `<li><button data-dim="${d.id}">${esc(d.name)}</button> <span class="muted">${sc(d.id)}점</span><div class="small muted">${esc(d.summary)}</div></li>`).join("");
+const best = ranked[ranked.length - 1];
+$("#best").innerHTML = best ? `가장 잘하는 것: <b>${esc(best.name)}</b> (${sc(best.id)}점)` : "";
+const nCoach = sessions.reduce((a, s) => a + (s.coaching || []).length, 0);
+const nMissed = sessions.reduce((a, s) => a + Object.values(s.dimensions || {}).filter(v => v.score === 0).length, 0);
+$("#tiles").innerHTML = `<button data-go="sessions"><b>${sessions.length}</b><span>채점한 대화</span></button>
+ <button data-go="coach"><b>${nCoach}</b><span>고쳐 쓰기 예시</span></button>
+ <button data-go="sessions"><b>${nMissed}</b><span>빠뜨린 판정</span></button>`;
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+$("#about").innerHTML =`${esc(D.rubric.title)}. 점수는 해당 항목이 필요했던 대화만 평균 낸 값입니다.`;
+const barItem = d => {
+  const v = sc(d.id), n = cur.dimensions[d.id] || {};
+  return `<li data-dim="${d.id}"><span class="nm">${esc(d.name)} <span class="small muted">${n.n ? n.n + "개 대화" : ""}</span></span>
+  <span class="sc">${v == null ? '<span class="na">–</span>' : v}</span><span class="bar"><span style="width:${v || 0}%"></span></span></li>`;
+};
+$("#ov-dims").innerHTML = ranked.concat(unscored).map(barItem).join("");
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-dim]");
+  if (el && !el.closest("#coach-list")) go("coach", el.dataset.dim);
+});
+
+function radar() {
+  const n = dims.length, W = 420, H = 400, cx = W / 2, cy = H / 2 + 4, r = 140;
+  const pt = (i, v) => { const a = -Math.PI / 2 + 2 * Math.PI * i / n; return [cx + r * v / 100 * Math.cos(a), cy + r * v / 100 * Math.sin(a)]; };
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="radar" role="img" aria-label="항목별 점수 레이더 차트">`;
+  for (const ring of [25, 50, 75, 100]) s += `<polygon class="grid" points="${dims.map((_, i) => pt(i, ring).join(",")).join(" ")}"/>`;
+  dims.forEach((d, i) => {
+    const [x, y] = pt(i, 100), [lx, ly] = pt(i, 121), v = sc(d.id);
+    const anchor = Math.abs(lx - cx) < 8 ? "middle" : lx > cx ? "start" : "end";
+    s += `<line class="grid" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+    s += `<text class="axis" data-dim="${d.id}" x="${lx}" y="${ly}" text-anchor="${anchor}">${esc(d.short)}<tspan x="${lx}" dy="1.2em">${v ?? "–"}</tspan></text>`;
+  });
+  const poly = (run, cls) => `<polygon class="${cls}" points="${dims.map((d, i) => pt(i, (run.dimensions[d.id] || {}).score || 0).join(",")).join(" ")}"/>`;
+  if (prev) s += poly(prev, "prev");
+  s += poly(cur, "cur");
+  dims.forEach((d, i) => { const v = sc(d.id); if (v == null) return; const [x, y] = pt(i, v);
+    s += `<circle class="dot" data-dim="${d.id}" cx="${x}" cy="${y}" r="5"><title>${esc(d.name)}: ${v}점</title></circle>`; });
+  $("#radar").innerHTML = s + "</svg>";
+  $("#legend").innerHTML = `<span><i style="background:var(--accent)"></i>이번 ${day(cur.created)}</span>` +
+    (prev ? `<span><i style="background:var(--prev)"></i>지난번 ${day(prev.created)}</span>` : "");
+}
+radar();
+
+/* ---------- coaching ---------- */
+const coachBy = {}, missedBy = {};
+for (const s of sessions) {
+  for (const c of s.coaching || []) (coachBy[c.dimension] ||= []).push({...c, s});
+  for (const [id, v] of Object.entries(s.dimensions || {})) if (v.score === 0) (missedBy[id] ||= []).push({...v, s});
+}
+$("#coach-list").innerHTML = ranked.concat(unscored).map(barItem).join("");
+$("#coach-list").addEventListener("click", e => { const li = e.target.closest("li[data-dim]"); if (li) go("coach", li.dataset.dim); });
+const sessLine = s => `${esc(SRC[s.source] || s.source)} · ${esc(s.project)} · ${day(s.ended)} · ${esc(s.task_summary)}`;
+function showDim(id, open) {
+  id = id || (ranked[0] || dims[0]).id; state.dim = id;
+  const d = dims.find(x => x.id === id); if (!d) return;
+  document.querySelectorAll("#coach-list li").forEach(li => li.setAttribute("aria-current", li.dataset.dim === id));
+  const v = cur.dimensions[id] || {}, pv = prev && prev.rubric_version === cur.rubric_version ? (prev.dimensions[id] || {}).score : null;
+  const ex = coachBy[id] || [], ms = missedBy[id] || [];
+  let h = `<button class="iconbtn back" data-back>← 항목 목록</button>
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap">
+   <div><h2 style="font-size:18px;margin:0">${esc(d.name)}</h2><div class="muted">${esc(d.summary)}</div></div>
+   <div><span class="big" style="font-size:40px">${v.score ?? "–"}</span>${delta(v.score, pv)}</div></div>
+  <div class="small muted" style="margin:6px 0 4px">해당 대화 ${v.n || 0}개 · 빠뜨림 ${v.missed || 0}개</div>`;
+  if (ex.length) {
+    h += `<h3 style="margin-top:14px">내 대화에서 고쳐 쓰기 <span class="chip">${ex.length}</span></h3>`;
+    h += ex.map(c => `<div class="coach"><div class="ex"><div class="before"><b>실제로 쓴 지시 · turn ${c.turn}</b>${esc(c.original)}</div>
+      <div class="after"><b>이렇게 썼다면</b>${esc(c.better)}</div></div><div class="why">${esc(c.why)}</div>
+      <div class="sess"><a href="#sessions/${esc(c.s.id)}" data-sess="${esc(c.s.id)}">${sessLine(c.s)}</a></div></div>`).join("");
+  } else if (d.example) {
+    h += `<h3 style="margin-top:14px">가이드 예시</h3><div class="ex"><div class="before"><b>대신에</b>${esc(d.example.before)}</div><div class="after"><b>이렇게</b>${esc(d.example.after)}</div></div>`;
+  }
+  h += `<details ${ex.length ? "" : "open"}><summary>공식 가이드 근거 ${d.guide.length}개</summary>` + d.guide.map(g => {
+    const src = D.rubric.sources[g.source] || {}; return `<div class="guide">${esc(g.quote_ko)}<br><a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.title)} · ${esc(g.section)}</a></div>`;
+  }).join("") + `</details>`;
+  if (ms.length) h += `<details><summary>빠뜨린 대화 ${ms.length}개</summary><table><tr><th>대화</th><th>근거</th></tr>` +
+    ms.map(m => `<tr><td><a href="#sessions/${esc(m.s.id)}" data-sess="${esc(m.s.id)}">${esc(m.s.task_summary)}</a><div class="sess">${day(m.s.ended)} · ${esc(m.s.project)}</div></td><td>${esc(m.note)}${m.excerpt ? `<div class="sess">“${esc(m.excerpt)}”</div>` : ""}</td></tr>`).join("") + `</table></details>`;
+  $("#coach-detail").innerHTML = h; $("#coach-detail").scrollTop = 0;
+  if (open) $("#v-coach").classList.add("showing");
+}
+
+/* ---------- sessions ---------- */
+$("#filter").innerHTML = `<option value="">모든 항목</option>` + dims.map(d => `<option value="${d.id}">${esc(d.short)} 빠뜨린 대화</option>`).join("");
+const markOf = v => v == null ? "·" : ["✗", "△", "○"][v];
+function listSessions() {
+  const q = $("#q").value.trim().toLowerCase(), f = $("#filter").value;
+  const rows = sessions.filter(s => (!q || (s.task_summary + " " + s.project).toLowerCase().includes(q)) &&
+    (!f || (s.dimensions[f] || {}).score === 0));
+  $("#sess-list").innerHTML = rows.map(s => `<li data-id="${esc(s.id)}"><div>${esc(s.task_summary)}</div>
+    <div class="sess">${day(s.ended)} · ${esc(SRC[s.source] || s.source)} · ${s.turns}턴</div>
+    <div class="marks" title="${dims.map(d => d.short).join(" ")}">${dims.map(d => markOf((s.dimensions[d.id] || {}).score)).join("")}</div></li>`).join("")
+    || `<li class="muted">조건에 맞는 대화가 없습니다</li>`;
+  document.querySelectorAll("#sess-list li[data-id]").forEach(li => li.setAttribute("aria-current", li.dataset.id === state.sess));
+}
+$("#q").oninput = listSessions; $("#filter").onchange = listSessions;
+$("#sess-list").addEventListener("click", e => { const li = e.target.closest("li[data-id]"); if (li) go("sessions", li.dataset.id); });
+document.addEventListener("click", e => { const a = e.target.closest("[data-sess]"); if (a) { e.preventDefault(); go("sessions", a.dataset.sess); } });
+function showSession(id, open) {
+  listSessions();
+  const s = sessions.find(x => x.id === id) || sessions[0]; if (!s) { $("#sess-detail").innerHTML = '<p class="muted">채점한 대화가 없습니다.</p>'; return; }
+  state.sess = s.id;
+  document.querySelectorAll("#sess-list li[data-id]").forEach(li => li.setAttribute("aria-current", li.dataset.id === s.id));
+  let h = `<button class="iconbtn back" data-back>← 대화 목록</button>
+   <h2 style="font-size:17px;margin:0">${esc(s.task_summary)}</h2>
+   <div class="sess" style="margin-bottom:10px">${esc(SRC[s.source] || s.source)} · ${esc(s.project)} · ${day(s.started)} ~ ${day(s.ended)} · ${s.turns}턴</div>`;
+  if ((s.coaching || []).length) h += `<h3>이 대화의 고쳐 쓰기</h3>` + s.coaching.map(c => {
+    const d = dims.find(x => x.id === c.dimension) || {}; return `<div class="coach"><span class="chip">${esc(d.name || c.dimension)}</span>
+    <div class="ex"><div class="before"><b>실제로 쓴 지시 · turn ${c.turn}</b>${esc(c.original)}</div><div class="after"><b>이렇게 썼다면</b>${esc(c.better)}</div></div><div class="why">${esc(c.why)}</div></div>`; }).join("");
+  h += `<h3 style="margin-top:14px">항목별 판정</h3>` + dims.map(d => { const v = s.dimensions[d.id] || {};
+    return `<div class="score-row"><a href="#coach/${d.id}" data-dim="${d.id}">${esc(d.name)}</a>${pill(v.score)}<div>${esc(v.note || (v.score == null ? "해당 없음" : ""))}${v.excerpt ? `<div class="sess">turn ${v.evidence_turn}: “${esc(v.excerpt)}”</div>` : ""}</div></div>`; }).join("");
+  $("#sess-detail").innerHTML = h; $("#sess-detail").scrollTop = 0;
+  if (open) $("#v-sessions").classList.add("showing");
+}
+document.addEventListener("click", e => { if (e.target.closest("[data-back]")) document.querySelectorAll(".md").forEach(m => m.classList.remove("showing")); });
+
+/* ---------- trend ---------- */
+const versions = [...new Set(runs.map(r => r.rubric_version))];
+$("#trend-note").textContent = runs.length < 2
+  ? "아직 첫 회차입니다. 1~2주 뒤 agent-coach run 을 다시 돌리면 그 사이 대화만 채점해 변화가 쌓입니다."
+  : versions.length > 1 ? `회차마다 채점표 버전이 다릅니다(v${versions.join(", v")}). 새 항목은 이전 회차에 점수가 없습니다.` : `${runs.length}회차 기록`;
+function spark(pts) {
+  const p = pts.filter(x => x[1] != null); if (!p.length) return '<div class="muted small">기록 없음</div>';
+  const W = 200, H = 56, pad = 8, xs = p.map((_, i) => pad + (W - 2 * pad) * (p.length > 1 ? i / (p.length - 1) : .5)), ys = p.map(x => H - pad - (H - 2 * pad) * x[1] / 100);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="spark" role="img" aria-label="회차별 점수"><line class="grid" x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}"/>`;
+  if (p.length > 1) s += `<polyline class="trend" points="${xs.map((x, i) => x + "," + ys[i]).join(" ")}"/>`;
+  p.forEach((x, i) => s += `<circle class="dot" cx="${xs[i]}" cy="${ys[i]}" r="4"><title>${x[0]}: ${x[1]}점</title></circle>`);
+  return s + "</svg>";
+}
+const series = [["종합", null, runs.map(r => [day(r.created), r.overall])]].concat(dims.map(d => [d.name, d.id, runs.map(r => [day(r.created), (r.dimensions[d.id] || {}).score])]));
+$("#trends").innerHTML = series.map(([name, id, pts]) => { const last = [...pts].reverse().find(x => x[1] != null);
+  return `<div class="card"${id ? ` data-dim="${id}" style="cursor:pointer"` : ""}><div style="display:flex;justify-content:space-between"><h3>${esc(name)}</h3><span class="muted">${last ? last[1] : "–"}</span></div>${spark(pts)}</div>`; }).join("");
+
+/* ---------- start ---------- */
+const [tab, arg] = (location.hash.slice(1) || "overview").split("/");
+go(tab, arg, false);
+if (matchMedia("(max-width:760px)").matches && !arg) document.querySelectorAll(".md").forEach(m => m.classList.remove("showing"));
+})();
+</script>
+</body></html>
+"""
