@@ -53,7 +53,8 @@ class CodexParse(unittest.TestCase):
     def test_rollout(self):
         p = _write([
             {"type": "session_meta", "timestamp": "2026-11-09T03:55:42Z",
-             "payload": {"id": "abc", "cwd": "C:\\proj\\demo", "source": "vscode"}},
+             "payload": {"id": "abc", "cwd": "C:\\proj\\demo", "source": "vscode",
+                         "originator": "codex-tui", "thread_source": "user"}},
             {"type": "response_item", "timestamp": "2026-11-09T03:55:43Z", "payload": {
                 "type": "message", "role": "user", "content": [{"type": "input_text", "text": "<environment_context>..."}]}},
             {"type": "response_item", "timestamp": "2026-11-09T03:55:44Z", "payload": {
@@ -69,6 +70,9 @@ class CodexParse(unittest.TestCase):
 
     def test_exec_skipped(self):
         p = _write([{"type": "session_meta", "payload": {"id": "x", "cwd": "C:\\a", "source": "exec"}}])
+        self.assertIsNone(parse_codex_file(p))
+        p = _write([{"type": "session_meta", "payload": {"id": "y", "cwd": "C:\\a", "source": "vscode",
+                                                          "originator": "codex_cli_rs"}}])
         self.assertIsNone(parse_codex_file(p))
 
 

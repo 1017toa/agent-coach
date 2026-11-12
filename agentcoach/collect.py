@@ -220,7 +220,11 @@ def parse_codex_file(path: str, include_sdk: bool = False) -> Session | None:
                 sid = p.get("id") or sid
                 cwd = p.get("cwd") or ""
                 project = Path(cwd).name if cwd else ""
-                if p.get("source") == "exec" and not include_sdk:
+                # `codex exec`, or another program driving Codex through the app-server
+                # (default originator "codex_cli_rs"); the TUI/IDE set their own originator
+                scripted = p.get("source") == "exec" or p.get("originator") == "codex_cli_rs" \
+                    or p.get("thread_source") not in (None, "user")
+                if scripted and not include_sdk:
                     return None
                 if _is_temp_project(cwd.replace("\\", "-").replace("/", "-")):
                     return None
