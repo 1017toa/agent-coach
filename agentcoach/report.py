@@ -146,7 +146,16 @@ def _delta(cur, prev):
     return f'<span class="delta {cls}">지난번 대비 {sign}{d}</span>'
 
 
+def _normalize(runs: list[dict], rubric: dict) -> None:
+    """Runs scored with an older rubric lack newer dimensions; show them as 'no data'."""
+    for r in runs:
+        dims = r.setdefault("dimensions", {})
+        for d in rubric["dimensions"]:
+            dims.setdefault(d["id"], {"score": None, "n": 0, "missed": 0})
+
+
 def render(runs: list[dict], rubric: dict) -> str:
+    _normalize(runs, rubric)
     cur = runs[-1]
     prev = runs[-2] if len(runs) > 1 else None
     dims = rubric["dimensions"]
@@ -192,6 +201,10 @@ def render(runs: list[dict], rubric: dict) -> str:
 
     # trends
     h.append('<h2>회차별 변화</h2>')
+    versions = sorted({r.get("rubric", {}).get("version", 1) for r in runs})
+    if len(versions) > 1:
+        h.append(f'<p class="muted small">회차마다 채점표 버전이 다릅니다(v{", v".join(map(str, versions))}). '
+                 '새로 생긴 항목은 이전 회차에 점수가 없고, 종합 점수도 항목 수가 달라 그대로 비교하기 어렵습니다.</p>')
     if len(runs) < 2:
         h.append('<p class="muted small">아직 첫 회차입니다. 1~2주 뒤 <code>agent-coach run</code>을 다시 돌리면 그동안의 대화만 새로 채점해 변화를 그려 줍니다.</p>')
     h.append('<div class="trends">')

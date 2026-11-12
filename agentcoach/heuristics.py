@@ -21,6 +21,9 @@ PLAN = R(r"(계획|플랜|plan|설계|먼저 .*(말해|알려|정리)|질문(해
 EVIDENCE = R(r"(보여줘|보여 ?달|출력(을|도)? ?(보여|붙여)|로그(를|도)? ?(보여|붙여)|증거|스크린샷|캡처|evidence|show me|paste the output|결과(를)? (보여|붙여))")
 CORRECTION = R(r"^(아니|아냐|그게 아니|다시|또|여전히|still|no[,. ]|wrong|not what|그대로잖|안 ?바뀌|똑같)")
 ERRDUMP = R(r"(Traceback|Error:|Exception|at .+:\d+|\bline \d+|```)")
+STOPS = R(r"(멈춰|멈추고|물어보고|물어봐|확인받|승인(하면|받|한 ?뒤)|제출 ?전|하기 ?전에|직전에|묻지 ?말고|알아서 (진행|끝까지)|ask me|stop and|before (you )?(submit|delete|push|send)|keep going|don'?t ask)")
+DURABLE = R(r"(앞으로|항상|매번|무조건|절대|from now on|always|every time|never)")
+RECORD = R(r"(CLAUDE\.md|AGENTS\.md|메모리|기억해|규칙(으로|에)|스킬|skill|훅|hook|memory)")
 
 
 def _task_prompts(s: Session) -> list:
@@ -80,9 +83,28 @@ def score_session(s: Session, rubric: dict) -> dict:
     corrections = sum(1 for t in typed if CORRECTION.search(t.text.strip()))
     dims["steering"] = None if corrections == 0 else (2 if best <= 1 else 1 if best == 2 else 0)
 
+    risky = re.search(r"(제출|지원|결제|구매|삭제|지워|전송|보내|게시|업로드|푸시|push|submit|delete|send|publish|pay)", all_text, re.I)
+    dims["stop_conditions"] = graded(STOPS, ft, task_text) if actionable and (big or risky) else None
+
+    durable_turns = [t for t in typed if DURABLE.search(t.text)]
+    if not durable_turns:
+        dims["reusable_guidance"] = None
+    elif any(RECORD.search(t.text) for t in typed):
+        dims["reusable_guidance"] = 2
+    else:
+        dims["reusable_guidance"] = 0 if len(durable_turns) >= 3 else 1
+
+    resets = sum(1 for t in s.turns if t.slash in ("/clear", "/compact", "/new", "/fork"))
+    if len(typed) < 15:
+        dims["focused_session"] = None
+    elif len(typed) >= 60 and resets == 0:
+        dims["focused_session"] = 0
+    else:
+        dims["focused_session"] = 1 if (len(typed) >= 30 and resets == 0) else 2
+
     rx_for = {"specific_context": PATH, "done_criteria": VERIFY, "constraints": CONSTRAINT,
               "scope_signal": SCOPE, "plan_first": PLAN, "evidence": EVIDENCE, "steering": CORRECTION,
-              "hand_over": ERRDUMP}
+              "hand_over": ERRDUMP, "stop_conditions": STOPS, "reusable_guidance": DURABLE}
     out = {}
     for d in rubric["dimensions"]:
         did = d["id"]

@@ -15,20 +15,30 @@ Anthropic과 OpenAI가 공개한 공식 사용 가이드를 채점표로 삼아,
 - **API 키 불필요**: 이미 로그인해 둔 `claude` 또는 `codex` CLI로 채점합니다. 없으면 키워드 기반 오프라인 채점으로 동작합니다.
 - **로컬 전용**: 비밀키·이메일·전화번호는 가려서 채점기에 보내고, 결과는 내 컴퓨터에만 남습니다. 의존성 없는 Python 표준 라이브러리만 씁니다.
 
-## 채점 항목 (8개)
+## 채점 항목 (11개, 채점표 v2)
 
 | 항목 | 가이드가 권하는 것 |
 |---|---|
-| 구체적인 맥락 | 파일·화면·증상을 처음부터 짚기 |
+| 구체적인 맥락 | 목표와 함께 파일·화면·증상을 처음부터 짚기 |
 | 완료 기준과 검증 방법 | 테스트·빌드·스크린샷처럼 통과/실패로 확인할 수단 주기 |
 | 제약과 선호 | 건드리면 안 되는 것, 원하는 방식 미리 말하기 |
 | 자료 직접 건네기 | 설명 대신 @파일·스크린샷·에러 원문 붙이기 |
-| 범위 신호 | 최소한인지 넉넉하게인지 기대 범위 알려 주기 |
+| 범위와 결과물 형태 | 최소한인지 넉넉하게인지, 결과물 형식·길이 알려 주기 |
 | 계획·인터뷰 먼저 | 크거나 막연한 일은 계획이나 질문부터 |
-| 증거 요구 | "다 됐어요" 대신 실행 명령과 출력 보여 달라고 하기 |
+| 멈출 지점과 진행 방식 | 어디까지 알아서 하고 어디서 멈춰 물어볼지 정하기 |
+| 증거 요구와 결과 검토 | "다 됐어요" 대신 명령·출력·diff 보기, 새 세션에 검토 맡기기 |
 | 방향 바로잡기 | 두 번 교정해도 안 되면 새로 시작해 더 나은 프롬프트 쓰기 |
+| 반복 지시는 규칙 파일로 | 되풀이하는 규칙은 CLAUDE.md·AGENTS.md·스킬로 옮기기 |
+| 한 대화에 한 가지 결과 | 다른 일은 새 대화로, 긴 대화는 정리하기 |
 
-출처: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting)
+### 출처
+
+- Anthropic: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
+- Claude Academy: [AI 역량: 프레임워크 및 기초](https://academy.claude.com/ko/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/ko/courses/claude-code-101), [Claude Code 실전 활용](https://academy.claude.com/ko/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/ko/courses/claude-101)
+- OpenAI: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting)
+- OpenAI Academy: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (강좌 본문은 로그인 필요, 공개 소개만 반영)
+
+채점표가 바뀌면 이전 회차에는 새 항목 점수가 없고, 리포트에 버전이 다르다는 안내가 붙습니다.
 
 ## 설치와 실행
 

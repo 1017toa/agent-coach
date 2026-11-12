@@ -86,6 +86,27 @@ class Scoring(unittest.TestCase):
         self.assertEqual(r["dimensions"]["constraints"]["score"], 2)
         run = build_run([s], {s.id: r}, rubric, None, "heuristic")
         self.assertEqual(run["dimensions"]["done_criteria"]["score"], 100)
+        self.assertEqual(len(run["dimensions"]), len(rubric["dimensions"]))
+
+    def test_new_dimensions(self):
+        rubric = load_rubric()
+        p = _write([claude_user("지원서 채워서 제출해줘. 최종 제출 직전에는 멈추고 나한테 확인받아"),
+                    claude_user("앞으로 탐사는 무조건 x1이야"),
+                    claude_user("탐사는 무조건 x1이라니까"),
+                    claude_user("무조건 x1으로 해")])
+        r = score_session(parse_claude_file(p), rubric)["dimensions"]
+        self.assertEqual(r["stop_conditions"]["score"], 2)
+        self.assertEqual(r["reusable_guidance"]["score"], 0)
+        self.assertIsNone(r["focused_session"]["score"])
+
+    def test_report_renders_old_runs(self):
+        from agentcoach.report import render
+        rubric = load_rubric()
+        old = {"created": "2026-11-01T00:00:00+09:00", "overall": 50, "judge": "x", "session_count": 0,
+               "sources": [], "sessions": [], "rubric": {"version": 1},
+               "dimensions": {"done_criteria": {"score": 50, "n": 1, "missed": 0}}}
+        html_out = render([old], rubric)
+        self.assertIn("멈출 지점", html_out)
 
 
 class Redact(unittest.TestCase):
