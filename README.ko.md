@@ -6,6 +6,7 @@
 
 <p>
   <a href="https://github.com/1017toa/agent-coach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT 라이선스"></a>
+  <a href="https://pypi.org/project/agent-coach-cli/"><img src="https://img.shields.io/pypi/v/agent-coach-cli.svg?label=PyPI" alt="PyPI"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB.svg?logo=python&logoColor=white" alt="Python 3.10 이상">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen.svg" alt="의존성 없음">
   <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-8A63D2.svg" alt="Claude Code, Codex 지원">
@@ -34,11 +35,11 @@
 ## 빠른 시작
 
 ```bash
-pipx install agent-coach        # 또는: uv tool install agent-coach · pip install agent-coach
+pipx install agent-coach-cli    # 또는: uv tool install agent-coach-cli · pip install agent-coach-cli
 agent-coach run
 ```
 
-`run`은 이미 로그인해 둔 `claude` 또는 `codex` CLI로 최근 대화를 채점하고, 결과를 저장한 뒤 HTML 리포트를 엽니다. API 키도, 서버도, 추가 의존성도 필요 없습니다. 채점 전에 대상만 보고 싶다면 `agent-coach scan`을 쓰세요. 모델을 부르지 않습니다.
+PyPI 패키지 이름은 `agent-coach-cli`이고, 설치되는 명령은 `agent-coach`입니다. `run`은 이미 로그인해 둔 `claude` 또는 `codex` CLI로 최근 대화를 채점하고, 결과를 저장한 뒤 HTML 리포트를 엽니다. API 키도, 서버도, 추가 의존성도 필요 없습니다. 채점 전에 대상만 보고 싶다면 `agent-coach scan`을 쓰세요. 모델을 부르지 않습니다.
 
 ### Claude Code·Codex 안에서 쓰기
 

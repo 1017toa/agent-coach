@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-coach"
+name = "agent-coach-cli"
 version = "0.1.0"
 description = "Grade and coach your Claude Code and Codex prompts from your own conversation history, against Anthropic's and OpenAI's official guides."
 readme = "README.md"
