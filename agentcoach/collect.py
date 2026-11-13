@@ -49,6 +49,8 @@ _NOISE_PREFIXES = (
     "<side-sessions-event", "<ci-monitor-event", "Caveat:", "[Request interrupted",
     "<environment_context>", "<user_instructions>", "# AGENTS.md", "<permissions",
     "<turn_aborted>", "<user_shell_command>", "<subagent_notification", "<image",
+    "This session is being continued from a previous conversation",  # auto compaction summary
+    "<artifact-view-context", "<ide_", "<bash-input>", "<bash-stdout>",
 )
 _SLASH_RE = re.compile(r"<command-name>\s*(/[\w:-]+)\s*</command-name>")
 _ARGS_RE = re.compile(r"<command-args>(.*?)</command-args>", re.S)
