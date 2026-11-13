@@ -198,7 +198,7 @@ The default rubric (v2) is built from:
 - **Anthropic**: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
 - **Claude Academy**: [AI Fluency: Framework & Foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/courses/claude-code-101), [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/courses/claude-101)
 - **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting)
-- **OpenAI Academy**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (course bodies need sign-in; only the public overviews are used)
+- **OpenAI Academy**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (free with sign-in; the rubric cites specific lessons, such as the four-part task brief, Plan Mode, validation and handoff, delegation contracts and AGENTS.md)
 
 When the rubric changes, earlier runs have no score for new habits and the report says the versions differ.
 

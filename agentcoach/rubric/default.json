@@ -2,7 +2,7 @@
   "id": "official-guides-2026-11",
   "title": "Claude·OpenAI 공식 가이드와 아카데미 기반 기본 채점표",
   "version": 2,
-  "updated": "2026-11-12",
+  "updated": "2026-11-13",
   "scale": {
     "0": "빠뜨림: 가이드가 권하는 정보·행동이 없음",
     "1": "부분: 일부만 있거나 늦게(교정 후에) 나옴",
@@ -90,6 +90,20 @@
           "quote": "맥락 제공: 원하는 내용, 그 이유, 관련 배경을 구체적으로 설명한다.",
           "quote_en": "Provide context: say specifically what you want, why, and the relevant background.",
           "section_en": "Effective prompting techniques"
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.4 범위가 정해진 작업 만들기",
+          "section_en": "1.4 Scope a bounded task",
+          "quote": "작업 지시는 네 칸으로: 목표(무엇을 왜), 맥락 위치(먼저 볼 파일·에러·예시·스크린샷), 제약, 완료 조건.",
+          "quote_en": "A task brief has four fields: Goal (what and why), Context pointers (files, errors, examples, screenshots to inspect first), Constraints, Done when."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.3 Codex에 필요한 맥락 주기",
+          "section_en": "1.3 Give Codex the context it needs",
+          "quote": "저장소 전체가 아니라 바로 관련된 맥락만 준다: 해당 컴포넌트, 상태 로직, 기대 동작.",
+          "quote_en": "Give the directly relevant context (the components, the state logic, the expected behavior), not the whole repository."
         }
       ],
       "example": {
@@ -134,9 +148,17 @@
         },
         {
           "source": "openai-get-started-codex",
-          "section": "Overview",
-          "quote": "Codex에게 저장소 맥락과 완료 기준을 주고, 변경을 검증하는 습관을 기른다.",
-          "quote_en": "Build the habit of giving Codex repository context and completion criteria, and verifying the change."
+          "section": "1.4 범위가 정해진 작업 만들기",
+          "section_en": "1.4 Scope a bounded task",
+          "quote": "완료 조건에는 관찰 가능한 동작과 통과해야 할 검사를 적는다. 성공을 어떻게 알지 말할 수 없다면 아직 맡길 준비가 안 된 작업이다.",
+          "quote_en": "'Done when' describes the observable behavior and the checks that must pass. If you can't say how you'll know it succeeded, the task isn't ready to delegate."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.3 저장소를 에이전트가 일할 수 있게",
+          "section_en": "1.3 Make the repository agent-ready",
+          "quote": "맡기기 전에 실행·테스트 명령을 찾아 기준 검사를 한 번 돌리게 한다. 원래 깨져 있던 것과 이번 변경이 깨뜨린 것을 구분할 수 있다.",
+          "quote_en": "Before delegating, have Codex find the run and test commands and run a baseline check, so existing failures are separated from regressions."
         }
       ],
       "example": {
@@ -178,6 +200,20 @@
           "section": "For design work, name the styles you don’t want",
           "quote": "'뻔하지 않게' 같은 막연한 말보다 원하지 않는 패턴을 구체적으로 나열한다.",
           "quote_en": "Instead of a vague 'make it not generic', list the specific patterns you don't want."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.4 범위가 정해진 작업 만들기",
+          "section_en": "1.4 Scope a bounded task",
+          "quote": "제약에는 바뀌면 안 되는 것, 따라야 할 기존 패턴, 안전·범위 한계를 적는다.",
+          "quote_en": "Constraints say what must stay unchanged, which patterns to follow, and any safety or scope limits."
+        },
+        {
+          "source": "openai-agents-workflows",
+          "section": "2.2 에이전트가 일을 잘하려면",
+          "section_en": "2.2 What an agent needs to do a good job",
+          "quote": "경계를 미리 말한다: 보내거나 게시하지 말 것, 담당자·날짜를 지어내지 말 것, 빠지거나 불확실한 건 표시할 것.",
+          "quote_en": "State the boundaries up front: don't send or publish, don't invent owners or dates, flag anything missing or uncertain."
         }
       ],
       "example": {
@@ -219,6 +255,13 @@
           "section": "Explain a codebase / Prototype from a screenshot",
           "quote": "@로 파일을 붙이거나 경로를 명시하고, 화면은 스크린샷을 첨부한다.",
           "quote_en": "Attach files with @ or name their paths, and attach a screenshot for UI."
+        },
+        {
+          "source": "openai-agents-workflows",
+          "section": "3.2 프로젝트 만들고 맥락 주기",
+          "section_en": "3.2 Create a project and provide context",
+          "quote": "자료를 붙여 넣거나 위치(폴더·파일·연결된 앱)를 알려 주고, 초안을 쓰기 전에 그 자료를 제대로 보고 있는지 먼저 요약하게 한다.",
+          "quote_en": "Paste the material or point to where it lives (folder, file, connected app), and have the agent summarize it before drafting to confirm it sees the right context."
         }
       ],
       "example": {
@@ -262,6 +305,20 @@
           "quote": "길이를 추측하게 두지 말고 '두 문단으로', '100단어 이내로'처럼 말한다. 형식은 설명보다 예시로 보여 준다.",
           "quote_en": "Don't make it guess the length: say 'two paragraphs' or 'under 100 words'. Show the format with an example rather than describing it.",
           "section_en": "Getting better results"
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.4 결과 하나에 집중",
+          "section_en": "1.4 Keep one coherent outcome",
+          "quote": "첫 작업은 검증 가능한 결과 하나로. 관련 없는 정리·의존성 업그레이드·전면 개편은 따로 떼어 낸다.",
+          "quote_en": "A task should produce one verifiable outcome; split off unrelated cleanup, dependency upgrades or redesigns into their own tasks."
+        },
+        {
+          "source": "openai-agents-workflows",
+          "section": "2.2 에이전트가 일을 잘하려면",
+          "section_en": "2.2 What an agent needs to do a good job",
+          "quote": "결과물이 어떤 모양인지 말한다: 들어갈 항목, 형식, 초안으로 저장할지.",
+          "quote_en": "Say what the output should look like: the sections, the format, and whether to save it as a draft for review."
         }
       ],
       "example": {
@@ -311,6 +368,20 @@
           "section": "Brainstorm with Claude first",
           "quote": "원하는 게 아직 불분명하면 Claude에게 인터뷰를 시켜 스펙을 쓰게 하고, 새 세션에서 그 스펙으로 만든다.",
           "quote_en": "If you don't know what you want yet, have Claude interview you and write a spec, then build from it in a fresh session."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.4 편집 전에 계획하기",
+          "section_en": "1.4 Plan before editing",
+          "quote": "모호하거나, 여러 곳을 건드리거나, 낯선 코드이거나, 위험이 크거나, 방법이 여럿이면 Plan 모드로 먼저 계획을 받는다.",
+          "quote_en": "Use Plan Mode when the task is ambiguous, touches several parts, involves unfamiliar code, carries real risk, or has more than one reasonable approach."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.3 편집 전에 살펴보기",
+          "section_en": "1.3 Inspect before editing",
+          "quote": "낯선 저장소에서는 고치기 전에 관련 파일, 현재 동작, 가정과 위험, 작은 구현 계획부터 말하게 한다.",
+          "quote_en": "In an unfamiliar repository, first ask for the relevant files, the current behavior, assumptions and risks, and a small implementation plan."
         }
       ],
       "example": {
@@ -349,10 +420,18 @@
           "section_en": "A closer look at description"
         },
         {
-          "source": "openai-agents-workflows",
-          "section": "Overview",
-          "quote": "에이전트와 일할 때는 맥락을 주고, 결과물을 정의하고, 경계(boundaries)를 정한다.",
-          "quote_en": "When working with agents, give context, define the output, and set boundaries."
+          "source": "openai-extend-codex",
+          "section": "1.2 위임 계약 쓰기",
+          "section_en": "1.2 Write a delegation contract",
+          "quote": "무엇을 맡기는지, 지켜야 할 경계, 언제 멈추고 내 판단을 받을지, 받아들이기 전에 있어야 할 근거를 정해 둔다.",
+          "quote_en": "Define what Codex is responsible for, the boundaries it must respect, when it must stop for your decision, and the evidence needed before you accept the work."
+        },
+        {
+          "source": "openai-extend-codex",
+          "section": "1.2 권한 경계 정하기",
+          "section_en": "1.2 Set and verify permission boundaries",
+          "quote": "단계에 맞게 권한을 준다: 조사할 땐 읽기 전용, 계획을 승인한 뒤에야 작업 폴더 쓰기, 그 밖은 필요한 곳만.",
+          "quote_en": "Match access to the stage: read-only while investigating, workspace write only after the plan is approved, and anything wider only where needed."
         }
       ],
       "example": {
@@ -401,6 +480,20 @@
           "section": "Improve reliability with testing and review",
           "quote": "변경을 요청하는 데서 멈추지 말고 테스트·검사를 돌려 결과를 확인하고, /review 로 diff를 검토한 뒤 받아들인다.",
           "quote_en": "Don't stop at asking for a change: run the checks, confirm the result, and review the diff with /review before accepting it."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.5 검증하고 반복하기",
+          "section_en": "1.5 Validate and iterate",
+          "quote": "검증은 두 질문에 답해야 한다: 변경이 동작하는가, 주변에 깨진 건 없는가. 집중 테스트, 품질 검사, 수동 확인을 쌓는다.",
+          "quote_en": "Validation answers two questions: did the change work, and did anything nearby break? Stack a focused test, quality checks and a manual check."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.5 결과 검토와 인계",
+          "section_en": "1.5 Review the result and hand it off",
+          "quote": "diff를 정확성·범위·기존 패턴·테스트 범위·보안·미검증 가정으로 검토하고, 인계 요약에는 무엇을 검사했고 무엇을 확인 못 했는지 적게 한다.",
+          "quote_en": "Review the diff for correctness, scope, fit, coverage, security and unverified assumptions, and ask for a handoff listing what was checked and what couldn't be verified."
         }
       ],
       "example": {
@@ -450,6 +543,20 @@
           "section": "Iterate on UI with live updates",
           "quote": "직접 되돌린 부분이 있으면 Codex에게 알려서 덮어쓰지 않게 한다.",
           "quote_en": "If you reverted something by hand, tell Codex so it doesn't overwrite your edits."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.4 구현 중에 방향 잡기",
+          "section_en": "1.4 Implement and steer the work",
+          "quote": "범위를 벗어나거나 규칙을 무시하거나 쓸데없이 복잡해지면 끼어든다. 처음부터 다시 시키기보다 무엇은 그대로 두고 무엇을 바꿀지 구체적으로 말한다.",
+          "quote_en": "Step in when it leaves the task, ignores conventions or adds needless complexity; rather than restarting, say specifically what stays the same and what changes."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.5 검증하고 반복하기",
+          "section_en": "1.5 Validate and iterate",
+          "quote": "검사가 실패하면 그것을 근거로 삼아 원인(구현·테스트·환경·불명확한 요구)부터 찾게 한 뒤 고치고 다시 돌린다.",
+          "quote_en": "Treat a failing check as evidence: have it find the cause (implementation, test, environment or unclear requirement) before fixing, then rerun."
         }
       ],
       "example": {
@@ -487,10 +594,18 @@
           "quote_en": "Only put in CLAUDE.md what Claude can't learn from the code, and enforce rules that can't have exceptions with hooks."
         },
         {
+          "source": "openai-get-started-codex",
+          "section": "1.3 오래 쓸 지침은 AGENTS.md에",
+          "section_en": "1.3 Use AGENTS.md for durable guidance",
+          "quote": "작업마다 바뀌지 않는 실행·테스트 명령, 코드 규칙, 건드리면 안 되는 파일, 완료 전 검증 단계는 AGENTS.md에 둔다.",
+          "quote_en": "Guidance that doesn't change per task (run and test commands, conventions, files not to touch, validation steps before done) belongs in AGENTS.md."
+        },
+        {
           "source": "openai-extend-codex",
-          "section": "Overview",
-          "quote": "효과 있는 개인 습관을 공유 지침과 재사용 스킬로 만들어 팀 관행으로 바꾼다.",
-          "quote_en": "Turn effective personal habits into shared guidance and reusable skills the team can follow."
+          "section": "1.3 안정된 작업은 스킬로",
+          "section_en": "1.3 Package stable work as a reusable skill",
+          "quote": "이미 잘 되는 반복 작업은 단계·입력·멈출 조건·결과 형태를 담아 스킬로 만든다. 지금 요구는 프롬프트, 저장소 규칙은 AGENTS.md, 취향은 메모리에.",
+          "quote_en": "Turn a workflow that already works into a skill with its steps, inputs, stop conditions and output. Current requirements go in the prompt, repo rules in AGENTS.md, preferences in memory."
         }
       ],
       "example": {
@@ -534,6 +649,20 @@
           "quote": "/compact는 단독으로 쓰지 말고 무엇을 남길지 지시를 붙인다.",
           "quote_en": "Don't run /compact bare; tell it what the summary must keep.",
           "section_en": "Steering long sessions"
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.3 맥락 범위 유지하기",
+          "section_en": "1.3 Keep the context scoped",
+          "quote": "일이 다른 문제로 넘어가면 같은 프로젝트에서 새 대화(스레드)를 연다.",
+          "quote_en": "When the work shifts to a different problem, start another thread in the project."
+        },
+        {
+          "source": "openai-extend-codex",
+          "section": "1.5 긴 작업을 일관되게",
+          "section_en": "1.5 Keep long-running work coherent",
+          "quote": "긴 작업은 목표, 마일스톤, 결정 기록, 진행 상황을 대화 밖 문서에 남겨 대화에 의존하지 않게 한다.",
+          "quote_en": "For long-running work, keep the goal, milestones, decisions and progress in documents so the conversation doesn't have to hold the whole project state."
         }
       ],
       "example": {
