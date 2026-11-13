@@ -23,14 +23,14 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-dark.png">
-  <img alt="agent-coach report: overall score, the three habits to work on, a radar chart of 11 prompting habits and a weakest-first list" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-light.png" width="900">
+  <img alt="agent-coach report: overall score, the three habits to work on, a radar chart of 12 prompting habits and a weakest-first list" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-light.png" width="900">
 </picture>
 
 <sub>Demo report built from made-up conversations (<code>python scripts/demo_report.py</code>).</sub>
 
 </div>
 
-**agent-coach** is a command-line tool that reads the transcripts Claude Code and OpenAI Codex already save on your machine (`~/.claude/projects`, `~/.codex/sessions`) and scores how you direct the agent on 11 habits taken from the official Anthropic and OpenAI guides and academies. It rewrites prompts you actually typed into better versions, finds the turns where you didn't get what you wanted, and tracks your scores run after run so you can see whether you're improving.
+**agent-coach** is a command-line tool that reads the transcripts Claude Code and OpenAI Codex already save on your machine (`~/.claude/projects`, `~/.codex/sessions`) and scores how you direct the agent on 12 habits taken from the official Anthropic and OpenAI guides and academies. It rewrites prompts you actually typed into better versions, finds the turns where you didn't get what you wanted, and tracks your scores run after run so you can see whether you're improving.
 
 ## Quick start
 
@@ -88,7 +88,7 @@ Judge: `claude` CLI, `codex` CLI, or offline keyword scoring (`--judge heuristic
   │
   ● redact     keys, emails, phone / ID / card numbers, addresses, names you list
   │
-  ● judge      one call per conversation via your claude / codex CLI, rubric v2 (11 habits)
+  ● judge      one call per conversation via your claude / codex CLI, rubric v3 (12 habits)
   │
   ● save       ~/.agent-coach/history/run-*.json
   │
@@ -97,7 +97,7 @@ Judge: `claude` CLI, `codex` CLI, or offline keyword scoring (`--judge heuristic
 
 ## What it grades
 
-Eleven habits, each scored 0 / 1 / 2 only in the conversations where it mattered, averaged to 0–100.
+Twelve habits, each scored 0 / 1 / 2 only in the conversations where it mattered, averaged to 0–100.
 
 | Habit | What the guides recommend |
 |---|---|
@@ -112,6 +112,7 @@ Eleven habits, each scored 0 / 1 / 2 only in the conversations where it mattered
 | Course correction | After two failed corrections, start fresh with a better prompt |
 | Move repeated rules into files | Put recurring rules in CLAUDE.md, AGENTS.md or a skill |
 | One outcome per conversation | New work in a new conversation; tidy long ones |
+| Model and effort choice | Match model and reasoning effort to the work, judged from what each conversation actually ran on |
 
 <img alt="Coaching tab: a habit's score, rewrites of the user's own prompts side by side with better versions, and the official guidance behind it" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/coaching.png" width="900">
 
@@ -193,9 +194,9 @@ Not yet; Claude Code and Codex only. Support for more tools is on the roadmap, a
 
 ## Sources
 
-The default rubric (v2) is built from:
+The default rubric (v3) is built from:
 
-- **Anthropic**: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
+- **Anthropic**: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Model configuration](https://code.claude.com/docs/en/model-config), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
 - **Claude Academy**: [AI Fluency: Framework & Foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/courses/claude-code-101), [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/courses/claude-101)
 - **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting)
 - **OpenAI Academy**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (free with sign-in; the rubric cites specific lessons, such as the four-part task brief, Plan Mode, validation and handoff, delegation contracts and AGENTS.md)

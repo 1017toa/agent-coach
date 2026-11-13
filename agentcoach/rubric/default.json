@@ -1,8 +1,8 @@
 {
   "id": "official-guides-2026-11",
   "title": "Claude·OpenAI 공식 가이드와 아카데미 기반 기본 채점표",
-  "version": 2,
-  "updated": "2026-11-13",
+  "version": 3,
+  "updated": "2026-11-14",
   "scale": {
     "0": "빠뜨림: 가이드가 권하는 정보·행동이 없음",
     "1": "부분: 일부만 있거나 늦게(교정 후에) 나옴",
@@ -61,6 +61,11 @@
     "openai-extend-codex": {
       "title": "Extend Codex Workflows (OpenAI Academy)",
       "url": "https://academy.openai.com/public/courses/extend-codex-workflows-4e61p"
+    },
+    "claude-model-config": {
+      "title": "Claude Code 모델 설정 (Anthropic)",
+      "title_en": "Model configuration – Claude Code docs (Anthropic)",
+      "url": "https://code.claude.com/docs/en/model-config"
     }
   },
   "dimensions": [
@@ -678,6 +683,50 @@
           "after": "(in a new session) make an employment certificate Word template. company, dates and role are below."
         }
       }
+    },
+    {
+      "id": "model_effort",
+      "name": "모델·effort 선택",
+      "short": "모델",
+      "summary": "일의 난이도에 맞게 모델과 effort를 고른다. 간단한 일은 낮게, 버그·엣지 케이스·모호한 일은 높게, 막히면 올리거나 모델을 바꾼다.",
+      "look_for": "Compare the task's difficulty and risk with the model/effort recorded for each turn ('model/effort used' and '[answered by …]' tags). Good (2): effort and model fit the work, e.g. low/medium for quick, reviewed, well-scoped changes; high or a stronger model for bugs in existing code, edge-case-heavy work, ambiguous investigations or long autonomous runs; the user raises effort or switches model (/effort, /model, picker) when the agent keeps failing, and lowers it again for routine follow-ups. Partial (1): mostly fine but one clear mismatch. Missed (0): a persistent mismatch the user never adjusted, such as max/xhigh on many trivial edits or Q&A (slow, costly, overthinking) or low effort on hard debugging that kept failing. The default level is not a fault by itself: medium is the recommended starting point for everyday work.",
+      "applies_when": "The transcript records model/effort and the session has a real task whose difficulty can be judged. Not applicable (null) when model/effort is missing or the session is too short to tell.",
+      "example": {
+        "before": "(effort max 그대로) README 오타 하나만 고쳐줘",
+        "after": "(/effort low 로 내린 뒤) README 3번째 줄 오타 고쳐줘"
+      },
+      "en": {
+        "name": "Model and effort choice",
+        "short": "Model",
+        "summary": "Match the model and effort to the work: low for quick edits, higher for bugs, edge cases and ambiguous work, and raise it or switch models when the agent is stuck.",
+        "example": {
+          "before": "(still on effort max) fix one typo in the README",
+          "after": "(after /effort low) fix the typo on line 3 of the README"
+        }
+      },
+      "guide": [
+        {
+          "source": "claude-model-config",
+          "section": "effort 단계 고르기",
+          "section_en": "Choose an effort level",
+          "quote": "low는 결과를 바로 확인하는 짧은 일(이름 바꾸기 등), medium은 범위가 분명한 일상 작업, high는 검증이 중요하거나 엣지 케이스가 많은 일(기존 코드 버그 수정)에 쓴다.",
+          "quote_en": "Use low for quick exchanges you review (a rename), medium for everyday work with a clear scope, and high where verification matters or edge cases are likely (fixing a bug in existing code)."
+        },
+        {
+          "source": "claude-model-config",
+          "section": "effort 단계 고르기",
+          "section_en": "Choose an effort level",
+          "quote": "max는 혼자 오래 파고들 어려운 문제용이며 과하게 생각하는 경향이 있어 넓게 쓰기 전에 시험해 본다.",
+          "quote_en": "max is for hard problems Claude works through on its own; it can overthink, so test it before using it broadly."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "1.2 모델과 reasoning effort 고르기",
+          "section_en": "1.2 Choose a model and reasoning effort",
+          "quote": "일상 개발은 기본 모델의 medium으로 시작하고, 품질 기준을 안정적으로 맞추는 가장 낮은 effort를 쓴다. 복잡한 변경이나 어려운 디버깅에는 더 높인다.",
+          "quote_en": "Start everyday work at medium on the default model and use the lowest effort that reliably meets your quality bar; go higher for complex changes or difficult debugging."
+        }
+      ]
     }
   ],
   "title_en": "Default rubric grounded in Claude and OpenAI official guides and academies",

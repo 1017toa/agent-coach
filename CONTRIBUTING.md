@@ -22,7 +22,7 @@ No install is needed; `python -m agentcoach` runs from the checkout.
 | `agentcoach/redact.py` | Masks secrets and contact details before anything is sent to a judge |
 | `agentcoach/judge.py` | Builds the judge prompt and JSON schema, calls the `claude` / `codex` CLI |
 | `agentcoach/heuristics.py` | Offline keyword scoring |
-| `agentcoach/rubric/default.json` | The 11 habits, examples and guide citations (Korean base, `*_en` fields for English) |
+| `agentcoach/rubric/default.json` | The 12 habits, examples and guide citations (Korean base, `*_en` fields for English) |
 | `agentcoach/report.py` | Self-contained HTML report; UI strings in the `UI` table |
 | `agentcoach/i18n.py` | CLI messages in English and Korean |
 | `skills/coach/SKILL.md` | The skill the Claude Code and Codex plugins run |

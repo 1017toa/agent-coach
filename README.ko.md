@@ -23,14 +23,14 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-dark.png">
-  <img alt="agent-coach 리포트: 종합 점수, 이번에 집중할 습관 3개, 11개 지시 습관 레이더 차트, 약한 순서 목록" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-light.png" width="900">
+  <img alt="agent-coach 리포트: 종합 점수, 이번에 집중할 습관 3개, 12개 지시 습관 레이더 차트, 약한 순서 목록" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-light.png" width="900">
 </picture>
 
 <sub>가상의 대화로 만든 데모 리포트입니다 (<code>python scripts/demo_report.py --lang ko</code>).</sub>
 
 </div>
 
-**agent-coach**는 Claude Code와 OpenAI Codex가 내 컴퓨터에 이미 저장해 둔 대화 기록(`~/.claude/projects`, `~/.codex/sessions`)을 읽어, Anthropic·OpenAI 공식 가이드와 아카데미에서 뽑은 11가지 습관으로 내가 AI에게 지시하는 방식을 채점하는 명령줄 도구입니다. 내가 실제로 쓴 지시를 더 나은 형태로 고쳐 주고, 원하는 응답을 못 받은 턴을 찾아 주며, 회차마다 점수를 쌓아 나아지고 있는지 보여 줍니다.
+**agent-coach**는 Claude Code와 OpenAI Codex가 내 컴퓨터에 이미 저장해 둔 대화 기록(`~/.claude/projects`, `~/.codex/sessions`)을 읽어, Anthropic·OpenAI 공식 가이드와 아카데미에서 뽑은 12가지 습관으로 내가 AI에게 지시하는 방식을 채점하는 명령줄 도구입니다. 내가 실제로 쓴 지시를 더 나은 형태로 고쳐 주고, 원하는 응답을 못 받은 턴을 찾아 주며, 회차마다 점수를 쌓아 나아지고 있는지 보여 줍니다.
 
 ## 빠른 시작
 
@@ -88,7 +88,7 @@ codex plugin add agent-coach@agent-coach
   │
   ● 가리기    키, 이메일, 전화·주민·카드 번호, 주소, 직접 등록한 이름
   │
-  ● 채점      대화당 한 번, 내 claude / codex CLI로, 채점표 v2 (11개 습관)
+  ● 채점      대화당 한 번, 내 claude / codex CLI로, 채점표 v3 (12개 습관)
   │
   ● 저장      ~/.agent-coach/history/run-*.json
   │
@@ -97,7 +97,7 @@ codex plugin add agent-coach@agent-coach
 
 ## 채점 항목
 
-11개 습관을 그 습관이 필요했던 대화에서만 0 / 1 / 2로 매기고, 평균을 0~100점으로 바꿉니다.
+12개 습관을 그 습관이 필요했던 대화에서만 0 / 1 / 2로 매기고, 평균을 0~100점으로 바꿉니다.
 
 | 항목 | 공식 가이드가 권하는 것 |
 |---|---|
@@ -112,6 +112,7 @@ codex plugin add agent-coach@agent-coach
 | 방향 바로잡기 | 두 번 고쳐도 안 되면 더 나은 지시로 새로 시작한다 |
 | 반복 지시는 규칙 파일로 | 매번 하는 말은 CLAUDE.md, AGENTS.md, 스킬에 둔다 |
 | 한 대화에 한 가지 결과 | 새 일은 새 대화에서, 긴 대화는 정리한다 |
+| 모델·effort 선택 | 일의 난이도에 맞는 모델과 effort를 쓴다. 대화마다 실제로 쓴 모델·effort를 보고 판단 |
 
 <img alt="항목별 코칭 탭: 항목 점수, 내가 쓴 지시와 고쳐 쓴 지시 비교, 공식 가이드 근거" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-coaching.png" width="900">
 
@@ -193,9 +194,9 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 
 ## 출처
 
-기본 채점표(v2)는 다음 자료로 만들었습니다.
+기본 채점표(v3)는 다음 자료로 만들었습니다.
 
-- **Anthropic**: [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices), [Opus 5.5 활용 가이드](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
+- **Anthropic**: [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices), [모델 설정](https://code.claude.com/docs/en/model-config), [Opus 5.5 활용 가이드](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
 - **Claude 아카데미**: [AI Fluency: Framework & Foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/courses/claude-code-101), [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/courses/claude-101)
 - **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting)
 - **OpenAI 아카데미**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (무료, 로그인 필요. 채점표는 네 칸 작업 지시, Plan 모드, 검증과 인계, 위임 계약, AGENTS.md 같은 구체적인 레슨을 근거로 씀)

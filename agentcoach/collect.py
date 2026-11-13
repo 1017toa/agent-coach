@@ -26,6 +26,8 @@ class Turn:
     images: int = 0
     slash: str = ""           # e.g. "/clear" when the turn was a slash command
     agent_after: str = ""     # summary of what the agent did before the next human turn
+    model: str = ""           # model that answered this turn, when the transcript records it
+    effort: str = ""          # reasoning effort for that answer (low/medium/high/xhigh/max…)
 
 
 @dataclass
@@ -40,6 +42,15 @@ class Session:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+    def model_mix(self) -> list[dict]:
+        """[{model, effort, turns}] in order of first use; empty when the transcript has none."""
+        mix: dict[tuple[str, str], int] = {}
+        for t in self.turns:
+            if t.model or t.effort:
+                k = (t.model, t.effort)
+                mix[k] = mix.get(k, 0) + 1
+        return [{"model": m, "effort": e, "turns": n} for (m, e), n in mix.items()]
 
 
 # ---------------------------------------------------------------- helpers
@@ -147,6 +158,10 @@ def parse_claude_file(path: str, include_sdk: bool = False) -> Session | None:
                 if d.get("turnOrigin") not in (None, "human") and not origin_human and not include_sdk:
                     continue
             if d.get("type") == "assistant" and not d.get("isSidechain"):
+                model = (d.get("message") or {}).get("model") or ""
+                if turns and not turns[-1].model and model and not model.startswith("<"):
+                    turns[-1].model = model
+                    turns[-1].effort = str(d.get("perTurnEffort") or d.get("effort") or "")
                 for c in (d.get("message") or {}).get("content") or []:
                     if not isinstance(c, dict):
                         continue
@@ -241,6 +256,8 @@ def parse_codex_file(path: str, include_sdk: bool = False) -> Session | None:
                 if text.startswith(_NOISE_PREFIXES):
                     continue
                 order.append(("user", text, ts, images))
+            elif t == "turn_context":
+                order.append(("ctx", p.get("model") or "", str(p.get("effort") or p.get("reasoning_effort") or "")))
             elif t == "event_msg" and pt == "user_message":
                 from_events.append((p.get("message", "").strip(), ts, len(p.get("images") or [])))
             elif t == "response_item" and pt in ("function_call", "custom_tool_call", "local_shell_call"):
@@ -260,14 +277,21 @@ def parse_codex_file(path: str, include_sdk: bool = False) -> Session | None:
             turns[-1].agent_after = _summarize_agent(tools, last_text)
         tools, last_text = {}, ""
 
+    ctx = ("", "")
     for o in order:
+        if o[0] == "ctx":
+            ctx = (o[1], o[2])
+            if turns and not turns[-1].model:   # context logged right after the prompt it answers
+                turns[-1].model, turns[-1].effort = ctx
+            continue
         if o[0] == "user":
             _, text, ts, images = o
             if not text and not images:
                 continue
             flush()
             slash = text.split()[0] if text.startswith("/") and text.split() else ""
-            turns.append(Turn(index=len(turns) + 1, text=text, ts=ts, images=images, slash=slash))
+            turns.append(Turn(index=len(turns) + 1, text=text, ts=ts, images=images, slash=slash,
+                              model=ctx[0], effort=ctx[1]))
             first_ts = first_ts or ts
             last_ts = ts or last_ts
         elif o[0] == "tool":

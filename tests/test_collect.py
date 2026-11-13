@@ -76,6 +76,44 @@ class CodexParse(unittest.TestCase):
         self.assertIsNone(parse_codex_file(p))
 
 
+class ModelEffort(unittest.TestCase):
+    def test_claude_records_model_and_effort(self):
+        from agentcoach.judge import render_transcript
+        p = _write([
+            claude_user("버그 고쳐줘"),
+            {"type": "assistant", "effort": "high", "perTurnEffort": "high",
+             "message": {"model": "claude-opus-5-5", "content": [{"type": "text", "text": "ok"}]}},
+            claude_user("이제 README 오타만 고쳐"),
+            {"type": "assistant", "effort": "low", "perTurnEffort": "low",
+             "message": {"model": "claude-opus-5-5", "content": [{"type": "text", "text": "ok"}]}},
+        ])
+        s = parse_claude_file(p)
+        self.assertEqual([(t.model, t.effort) for t in s.turns],
+                         [("claude-opus-5-5", "high"), ("claude-opus-5-5", "low")])
+        self.assertEqual(len(s.model_mix()), 2)
+        txt = render_transcript(s)
+        self.assertIn("model/effort used", txt)
+        self.assertIn("effort low", txt)
+
+    def test_codex_turn_context(self):
+        p = _write([
+            {"type": "session_meta", "payload": {"id": "m", "cwd": "/w/demo", "source": "vscode",
+                                                 "originator": "codex-tui", "thread_source": "user"}},
+            {"type": "response_item", "payload": {"type": "message", "role": "user",
+                                                  "content": [{"type": "input_text", "text": "테스트 고쳐줘"}]}},
+            {"type": "turn_context", "payload": {"model": "gpt-5.6-sol", "effort": "medium"}},
+        ])
+        s = parse_codex_file(p)
+        self.assertEqual((s.turns[0].model, s.turns[0].effort), ("gpt-5.6-sol", "medium"))
+        self.assertEqual(s.project, "demo")
+
+    def test_rubric_has_model_dimension(self):
+        r = load_rubric(lang="en")
+        d = next(x for x in r["dimensions"] if x["id"] == "model_effort")
+        self.assertEqual(d["name"], "Model and effort choice")
+        self.assertGreaterEqual(r["version"], 3)
+
+
 class Scoring(unittest.TestCase):
     def test_heuristic_and_aggregate(self):
         rubric = load_rubric()

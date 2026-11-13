@@ -128,6 +128,8 @@ def make_run(rubric, created, base, seed):
         misses = [misses_src[{0: 0, 2: 2, 5: 1}[k]]] if k in (0, 2, 5) else []
         sessions.append({"id": f"s{k}", "source": src, "project": proj, "started": created, "ended": created,
                          "turns": turns, "task_summary": summary, "judge": "claude:sonnet",
+                         "models": [{"model": "claude-opus-5-5" if src == "claude" else "gpt-5.6-sol",
+                                     "effort": ["medium", "high", "low"][k % 3], "turns": turns}],
                          "dimensions": sd, "coaching": coaching, "misses": misses})
     scored = [v["score"] for v in dims.values()]
     return {"schema": 1, "created": created, "judge": "claude:sonnet", "sources": ["claude", "codex"],
@@ -143,8 +145,8 @@ def main():
     ap.add_argument("-o", "--out", default="demo-report.html")
     a = ap.parse_args()
     rubric = load_rubric(lang=a.lang)
-    runs = [make_run(rubric, "2026-10-30T09:00:00+00:00", [48, 22, 41, 70, 45, 30, 35, 50, 72, 60, 38], 1),
-            make_run(rubric, "2026-11-13T09:00:00+00:00", [64, 41, 55, 83, 58, 49, 47, 63, 80, 78, 52], 2)]
+    runs = [make_run(rubric, "2026-10-30T09:00:00+00:00", [48, 22, 41, 70, 45, 30, 35, 50, 72, 60, 38, 55], 1),
+            make_run(rubric, "2026-11-13T09:00:00+00:00", [64, 41, 55, 83, 58, 49, 47, 63, 80, 78, 52, 70], 2)]
     Path(a.out).write_text(render(runs, rubric), encoding="utf-8")
     print(a.out)
 

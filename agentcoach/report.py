@@ -90,7 +90,7 @@ UI = {
     'no_match': {'ko': '조건에 맞는 대화가 없습니다', 'en': 'No matching conversations'},
     'no_sess': {'ko': '채점한 대화가 없습니다.', 'en': 'No conversations graded.'},
     'back_sess': {'ko': '← 대화 목록', 'en': '← Conversations'},
-    'turns2': {'ko': '${day(s.ended)} · ${s.turns}턴</div>`;', 'en': '${day(s.ended)} · ${s.turns} turns</div>`;'},
+    'turns2': {'ko': '${day(s.ended)} · ${s.turns}턴${mdl(s)}</div>`;', 'en': '${day(s.ended)} · ${s.turns} turns${mdl(s)}</div>`;'},
     'sess_rewrites': {'ko': '<h3>이 대화의 고쳐 쓰기</h3>', 'en': '<h3>Rewrites in this conversation</h3>'},
     'sess_misses': {'ko': '원하는 응답을 못 받은 곳 <span class="chip">', 'en': 'Where you didn\'t get what you wanted <span class="chip">'},
     'verdicts': {'ko': '항목별 판정</h3>', 'en': 'Verdict per habit</h3>'},
@@ -316,6 +316,7 @@ const D = JSON.parse(document.getElementById("data").textContent);
 const dims = D.rubric.dimensions, runs = D.runs, cur = runs[runs.length - 1], prev = runs.length > 1 ? runs[runs.length - 2] : null;
 const sessions = D.current.sessions || [];
 const SRC = {claude: "Claude Code", codex: "Codex"};
+const mdl = s => (s.models || []).length ? " · " + s.models.map(m => esc((m.model || "?").replace(/^claude-/, "")) + (m.effort ? " / " + esc(m.effort) : "") + (s.models.length > 1 ? ` (${m.turns})` : "")).join(", ") : "";
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const day = s => (s || "").slice(0, 10);

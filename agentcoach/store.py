@@ -59,7 +59,7 @@ def build_run(sessions: list[Session], results: dict[str, dict], rubric: dict,
             v["excerpt"] = redact(t.text[:220]) if t else ""
         per.append({
             "id": s.id, "source": s.source, "project": s.project,
-            "started": s.started, "ended": s.ended, "turns": len(s.turns),
+            "started": s.started, "ended": s.ended, "turns": len(s.turns), "models": s.model_mix(),
             "task_summary": redact(r.get("task_summary", "")),
             "judge": r.get("judge", judge),
             "dimensions": dims,

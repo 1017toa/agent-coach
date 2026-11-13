@@ -24,13 +24,22 @@ MAX_SESSION_CHARS = 40000   # misses need the whole session, not just its openin
 
 def render_transcript(s: Session) -> str:
     lines = [f"source: {s.source}  project: {s.project}  turns: {len(s.turns)}"]
+    mix = s.model_mix()
+    if mix:
+        lines.append("\nmodel/effort used: " + ", ".join(
+            f'{m["model"] or "?"} / {m["effort"] or "?"} ({m["turns"]} turns)' for m in mix))
     budget = MAX_SESSION_CHARS
+    shown = ("", "")
     for t in s.turns:
         txt = redact(t.text)
         if len(txt) > MAX_TURN_CHARS:
             txt = txt[:MAX_TURN_CHARS] + f"… [+{len(txt) - MAX_TURN_CHARS} chars]"
         img = f" [+{t.images} image]" if t.images else ""
-        block = f"\n### USER turn {t.index}{img}\n{txt}\n"
+        tag = ""
+        if (t.model or t.effort) and (t.model, t.effort) != shown:
+            tag = f" [answered by {t.model or '?'} / effort {t.effort or '?'}]"
+            shown = (t.model, t.effort)
+        block = f"\n### USER turn {t.index}{img}{tag}\n{txt}\n"
         if t.agent_after:
             block += f"[agent → {redact(t.agent_after)}]\n"
         if len(block) > budget:
