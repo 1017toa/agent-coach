@@ -5,7 +5,7 @@
 <p><b>내 Claude Code·Codex 대화 기록을 Anthropic·OpenAI 공식 가이드 기준으로 채점하고, 지시 습관을 코칭해 주는 도구.</b></p>
 
 <p>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT 라이선스"></a>
+  <a href="https://github.com/1017toa/agent-coach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT 라이선스"></a>
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB.svg?logo=python&logoColor=white" alt="Python 3.9 이상">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen.svg" alt="의존성 없음">
   <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-8A63D2.svg" alt="Claude Code, Codex 지원">
@@ -17,12 +17,12 @@
   <a href="#채점-항목">채점 항목</a> ·
   <a href="#놓친-응답-분석">놓친 응답</a> ·
   <a href="#자주-묻는-질문">FAQ</a> ·
-  <a href="README.md">English</a>
+  <a href="https://github.com/1017toa/agent-coach/blob/main/README.md">English</a>
 </p>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/ko-overview-dark.png">
-  <img alt="agent-coach 리포트: 종합 점수, 이번에 집중할 습관 3개, 11개 지시 습관 레이더 차트, 약한 순서 목록" src="docs/images/ko-overview-light.png" width="900">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-dark.png">
+  <img alt="agent-coach 리포트: 종합 점수, 이번에 집중할 습관 3개, 11개 지시 습관 레이더 차트, 약한 순서 목록" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-light.png" width="900">
 </picture>
 
 <sub>가상의 대화로 만든 데모 리포트입니다 (<code>python scripts/demo_report.py --lang ko</code>).</sub>
@@ -34,15 +34,33 @@
 ## 빠른 시작
 
 ```bash
-pip install git+https://github.com/1017toa/agent-coach.git
+pipx install agent-coach        # 또는: uv tool install agent-coach · pip install agent-coach
 agent-coach run
 ```
 
 `run`은 이미 로그인해 둔 `claude` 또는 `codex` CLI로 최근 대화를 채점하고, 결과를 저장한 뒤 HTML 리포트를 엽니다. API 키도, 서버도, 추가 의존성도 필요 없습니다. 채점 전에 대상만 보고 싶다면 `agent-coach scan`을 쓰세요. 모델을 부르지 않습니다.
 
+### Claude Code·Codex 안에서 쓰기
+
+플러그인을 설치하면 에이전트가 직접 채점을 돌리고 대화창에서 코칭해 줍니다. 따로 설치할 것이 없습니다.
+
+```text
+# Claude Code
+/plugin install agent-coach --marketplace 1017toa/agent-coach
+/agent-coach:coach
+```
+
+```bash
+# Codex
+codex plugin marketplace add 1017toa/agent-coach
+codex plugin add agent-coach@agent-coach
+```
+
+그다음 Codex에게 "agent-coach로 내 지시 습관 채점해줘"라고 하면 됩니다. 스킬이 채점 대상을 먼저 보여 주고, 채점한 뒤, 약한 습관과 고쳐 쓰기, `CLAUDE.md` / `AGENTS.md`에 넣을 규칙까지 짚어 줍니다.
+
 ## 특징
 
-- **공식 가이드에 근거**: 항목마다 출처 섹션이 붙어 있습니다. Claude Code 모범 사례, Claude 아카데미, Codex 모범 사례, OpenAI 아카데미 ([채점표](agentcoach/rubric/default.json)).
+- **공식 가이드에 근거**: 항목마다 출처 섹션이 붙어 있습니다. Claude Code 모범 사례, Claude 아카데미, Codex 모범 사례, OpenAI 아카데미 ([채점표](https://github.com/1017toa/agent-coach/blob/main/agentcoach/rubric/default.json)).
 - **내 실제 지시를 고쳐 쓰기**: 일반론 대신 "이렇게 썼는데, 이렇게 썼다면 나았다. 이유는…"을 보여 줍니다.
 - **짧은 지시는 감점하지 않음**: 대화가 길어지면 "응 해줘"로 충분할 때가 많습니다. 실제로 원하는 응답을 못 받았고 원인이 내 지시의 빈틈일 때만 코칭합니다.
 - **적어 둘 규칙을 찾아 줌**: 여러 대화에서 반복되는 빈틈을 한 줄 규칙으로 묶고, 넣을 곳(`CLAUDE.md` / `AGENTS.md`, 메모리, 스킬, 훅)까지 알려 줍니다.
@@ -94,7 +112,7 @@ agent-coach run
 | 반복 지시는 규칙 파일로 | 매번 하는 말은 CLAUDE.md, AGENTS.md, 스킬에 둔다 |
 | 한 대화에 한 가지 결과 | 새 일은 새 대화에서, 긴 대화는 정리한다 |
 
-<img alt="항목별 코칭 탭: 항목 점수, 내가 쓴 지시와 고쳐 쓴 지시 비교, 공식 가이드 근거" src="docs/images/ko-coaching.png" width="900">
+<img alt="항목별 코칭 탭: 항목 점수, 내가 쓴 지시와 고쳐 쓴 지시 비교, 공식 가이드 근거" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-coaching.png" width="900">
 
 ## 놓친 응답 분석
 
@@ -104,7 +122,7 @@ agent-coach run
 - **원인**: *내 지시의 빈틈*(나만 아는 정보가 빠졌고 맥락으로도 채워지지 않음) / *에이전트 잘못*(맥락은 충분했음) / *마음이 바뀜* / *외부 요인*.
 - **코칭**: 내 지시의 빈틈에만 "이 한 조각만 더했다면" 형태로 고쳐 쓰기가 붙습니다. 반복되는 빈틈은 규칙 후보가 됩니다.
 
-<img alt="놓친 응답 탭: 원인별 분류, 지시, 무슨 일이 있었나, 빠진 한 조각, 반복되는 빈틈 규칙" src="docs/images/ko-missed-responses.png" width="900">
+<img alt="놓친 응답 탭: 원인별 분류, 지시, 무슨 일이 있었나, 빠진 한 조각, 반복되는 빈틈 규칙" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-missed-responses.png" width="900">
 
 원인 분류는 LLM 채점에서만 됩니다. 키워드 채점은 신호만 찾고 원인은 미분류로 둡니다.
 
@@ -113,6 +131,7 @@ agent-coach run
 ```bash
 agent-coach scan        # 채점 대상만 미리 보기 (모델 호출 없음)
 agent-coach run         # 채점 → 회차 저장 → 리포트 열기
+agent-coach summary     # 최근 회차를 글로: 약한 습관, 고쳐 쓰기, 추가할 규칙
 agent-coach history     # 회차별 점수표
 agent-coach report      # 저장된 회차로 리포트 다시 만들기
 ```
@@ -127,7 +146,7 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 | `--rubric my-rubric.json` | 강의·팀용 맞춤 채점표 |
 | `--lang ko\|en` | 리포트와 코칭 언어 (기본: OS 언어 또는 `AGENT_COACH_LANG`) |
 
-설치 없이 소스에서 실행: `python -m agentcoach run`.
+설치 없이 소스에서 실행: `python -m agentcoach run`. 최신 개발 버전: `pip install git+https://github.com/1017toa/agent-coach.git`.
 
 **주기적으로 채점하기**: 1~2주마다 `agent-coach run`을 돌리면 새 대화만 채점해 추이에 더합니다. Claude Code는 기본 설정에서 30일 지난 대화를 지우므로 그보다 짧은 간격이 좋습니다.
 
@@ -160,7 +179,7 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 짧은 지시가 맞는 경우가 많기 때문입니다. 긴 논의 뒤의 "응 해줘"는 필요한 맥락을 다 갖고 있습니다. 다음 턴에서 빗나간 게 드러날 때만 코칭하고, 빠진 정보가 나만 알던 것일 때만 고쳐 씁니다.
 
 ### 강의나 팀용 채점표를 따로 쓸 수 있나요?
-네. [`agentcoach/rubric/default.json`](agentcoach/rubric/default.json)을 복사해 항목과 예시를 고친 뒤 `--rubric your-rubric.json`으로 넘기세요. 영어 필드가 없는 채점표는 쓴 그대로 보입니다.
+네. [`agentcoach/rubric/default.json`](https://github.com/1017toa/agent-coach/blob/main/agentcoach/rubric/default.json)을 복사해 항목과 예시를 고친 뒤 `--rubric your-rubric.json`으로 넘기세요. 영어 필드가 없는 채점표는 쓴 그대로 보입니다.
 
 ### 결과는 어디에 저장되나요?
 `~/.agent-coach/history/run-*.json`(회차마다 한 파일)과 `~/.agent-coach/report.html`입니다. `AGENT_COACH_HOME`으로 위치를 바꿀 수 있습니다.
@@ -169,7 +188,7 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 이름은 자동으로 확실히 찾을 수 없으니 `~/.agent-coach/redact.txt`에 한 줄에 하나씩(이름, 영문 이름, 회사명…) 적어 두세요. 키, 토큰, 이메일, 전화·주민·카드 번호, 도로명 주소는 자동으로 가립니다.
 
 ### Cursor, Gemini CLI, Aider도 되나요?
-아직은 Claude Code와 Codex만 됩니다. 다른 도구 지원은 로드맵에 있고, 파서는 작습니다([`agentcoach/collect.py`](agentcoach/collect.py)).
+아직은 Claude Code와 Codex만 됩니다. 다른 도구 지원은 로드맵에 있고, 파서는 작습니다([`agentcoach/collect.py`](https://github.com/1017toa/agent-coach/blob/main/agentcoach/collect.py)).
 
 ## 출처
 
@@ -190,7 +209,7 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 
 ## 기여
 
-이슈와 PR 환영합니다. [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요. 테스트:
+이슈와 PR 환영합니다. [CONTRIBUTING.md](https://github.com/1017toa/agent-coach/blob/main/CONTRIBUTING.md)를 참고하세요. 테스트:
 
 ```bash
 python -m unittest discover -s tests
@@ -198,4 +217,4 @@ python -m unittest discover -s tests
 
 ## 라이선스
 
-[MIT](LICENSE)
+[MIT](https://github.com/1017toa/agent-coach/blob/main/LICENSE)

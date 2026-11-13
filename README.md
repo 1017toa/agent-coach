@@ -5,7 +5,7 @@
 <p><b>Grade and coach your Claude Code and Codex prompts from your own conversation history, against Anthropic's and OpenAI's official guides.</b></p>
 
 <p>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <a href="https://github.com/1017toa/agent-coach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB.svg?logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen.svg" alt="Zero dependencies">
   <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-8A63D2.svg" alt="Works with Claude Code and Codex">
@@ -17,12 +17,12 @@
   <a href="#what-it-grades">What it grades</a> ·
   <a href="#missed-responses">Missed responses</a> ·
   <a href="#faq">FAQ</a> ·
-  <a href="README.ko.md">한국어</a>
+  <a href="https://github.com/1017toa/agent-coach/blob/main/README.ko.md">한국어</a>
 </p>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/overview-dark.png">
-  <img alt="agent-coach report: overall score, the three habits to work on, a radar chart of 11 prompting habits and a weakest-first list" src="docs/images/overview-light.png" width="900">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-dark.png">
+  <img alt="agent-coach report: overall score, the three habits to work on, a radar chart of 11 prompting habits and a weakest-first list" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-light.png" width="900">
 </picture>
 
 <sub>Demo report built from made-up conversations (<code>python scripts/demo_report.py</code>).</sub>
@@ -34,15 +34,33 @@
 ## Quick start
 
 ```bash
-pip install git+https://github.com/1017toa/agent-coach.git
+pipx install agent-coach        # or: uv tool install agent-coach · pip install agent-coach
 agent-coach run
 ```
 
 `run` grades your recent conversations through the `claude` or `codex` CLI you're already signed in to, saves the result and opens an HTML report. No API key, no server, no dependencies. Want to look before grading anything? `agent-coach scan` lists what would be graded, without calling a model.
 
+### Or use it inside Claude Code or Codex
+
+Install the plugin and let the agent run it and coach you in the chat, with nothing else to install.
+
+```text
+# Claude Code
+/plugin install agent-coach --marketplace 1017toa/agent-coach
+/agent-coach:coach
+```
+
+```bash
+# Codex
+codex plugin marketplace add 1017toa/agent-coach
+codex plugin add agent-coach@agent-coach
+```
+
+Then ask Codex to "grade my prompting with agent-coach". The skill previews what will be graded, runs the grading, and walks you through your weakest habits, rewrites and rules worth adding to `CLAUDE.md` / `AGENTS.md`.
+
 ## Highlights
 
-- **Grounded in the official guides.** Every habit cites the guide section it comes from: Claude Code best practices, Claude Academy, Codex best practices, OpenAI Academy ([rubric](agentcoach/rubric/default.json)).
+- **Grounded in the official guides.** Every habit cites the guide section it comes from: Claude Code best practices, Claude Academy, Codex best practices, OpenAI Academy ([rubric](https://github.com/1017toa/agent-coach/blob/main/agentcoach/rubric/default.json)).
 - **Rewrites of your real prompts.** "You wrote this; this would have worked better, because…", not generic tips.
 - **Short prompts aren't penalized.** In a long conversation, "ok do it" is often all you need. Coaching targets turns that actually missed, and only when the cause was a gap in your prompt.
 - **Finds rules worth writing down.** Gaps that recur across conversations become one-line rules, with where to put them: `CLAUDE.md` / `AGENTS.md`, memory, a skill, or a hook.
@@ -94,7 +112,7 @@ Eleven habits, each scored 0 / 1 / 2 only in the conversations where it mattered
 | Move repeated rules into files | Put recurring rules in CLAUDE.md, AGENTS.md or a skill |
 | One outcome per conversation | New work in a new conversation; tidy long ones |
 
-<img alt="Coaching tab: a habit's score, rewrites of the user's own prompts side by side with better versions, and the official guidance behind it" src="docs/images/coaching.png" width="900">
+<img alt="Coaching tab: a habit's score, rewrites of the user's own prompts side by side with better versions, and the official guidance behind it" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/coaching.png" width="900">
 
 ## Missed responses
 
@@ -104,7 +122,7 @@ Context builds up over a conversation, so a short instruction can be exactly rig
 - **Causes**: *gap in your prompt* (something only you knew was missing and context didn't cover it) / *agent error* (context was enough) / *changed your mind* / *external limit*.
 - **Coaching**: only prompt gaps get a rewrite, phrased as "the one missing piece". Gaps that recur become rule candidates.
 
-<img alt="Missed responses tab: turns split by cause, the prompt, what happened, the one missing piece and a recurring-gap rule" src="docs/images/missed-responses.png" width="900">
+<img alt="Missed responses tab: turns split by cause, the prompt, what happened, the one missing piece and a recurring-gap rule" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/missed-responses.png" width="900">
 
 Causes are classified only with an LLM judge; keyword scoring finds the signals and leaves the cause unclassified.
 
@@ -113,6 +131,7 @@ Causes are classified only with an LLM judge; keyword scoring finds the signals 
 ```bash
 agent-coach scan        # preview which conversations would be graded (no model calls)
 agent-coach run         # grade → save the run → open the report
+agent-coach summary     # latest run as text: weakest habits, rewrites, rules to add
 agent-coach history     # score table per run
 agent-coach report      # rebuild the report from saved runs
 ```
@@ -127,7 +146,7 @@ agent-coach report      # rebuild the report from saved runs
 | `--rubric my-rubric.json` | Your own rubric, for a course or a team |
 | `--lang en\|ko` | Language of the report and coaching (default: OS locale, or `AGENT_COACH_LANG`) |
 
-From a checkout without installing: `python -m agentcoach run`.
+From a checkout without installing: `python -m agentcoach run`. Latest development version: `pip install git+https://github.com/1017toa/agent-coach.git`.
 
 **Grade on a schedule.** Run `agent-coach run` every week or two; each run grades only what's new and adds to the trend. Claude Code deletes transcripts older than 30 days by default, so keep the interval shorter than that.
 
@@ -160,7 +179,7 @@ One judge call per conversation, on your existing plan. Use `--max-sessions` to 
 Because short prompts are often right. "Yes, do it" after a long discussion has all the context it needs. agent-coach only coaches a turn when what happened next shows it missed, and only rewrites it when the missing piece was something only you knew.
 
 ### Can I use my own rubric for a course or a team?
-Yes. Copy [`agentcoach/rubric/default.json`](agentcoach/rubric/default.json), edit the habits and examples, and pass `--rubric your-rubric.json`. A rubric without English fields is shown as written.
+Yes. Copy [`agentcoach/rubric/default.json`](https://github.com/1017toa/agent-coach/blob/main/agentcoach/rubric/default.json), edit the habits and examples, and pass `--rubric your-rubric.json`. A rubric without English fields is shown as written.
 
 ### Where are results stored?
 `~/.agent-coach/history/run-*.json` (one file per run) and `~/.agent-coach/report.html`. Set `AGENT_COACH_HOME` to move them.
@@ -169,7 +188,7 @@ Yes. Copy [`agentcoach/rubric/default.json`](agentcoach/rubric/default.json), ed
 Names can't be detected reliably, so list yours (name, romanized name, company, ...) one per line in `~/.agent-coach/redact.txt`. Keys, tokens, emails, phone, national ID and card numbers, and Korean road addresses are masked automatically.
 
 ### Does it support Cursor, Gemini CLI or Aider?
-Not yet; Claude Code and Codex only. Support for more tools is on the roadmap, and parsers are small (see [`agentcoach/collect.py`](agentcoach/collect.py)).
+Not yet; Claude Code and Codex only. Support for more tools is on the roadmap, and parsers are small (see [`agentcoach/collect.py`](https://github.com/1017toa/agent-coach/blob/main/agentcoach/collect.py)).
 
 ## Sources
 
@@ -190,7 +209,7 @@ When the rubric changes, earlier runs have no score for new habits and the repor
 
 ## Contributing
 
-Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Run the tests with:
+Issues and pull requests are welcome; see [CONTRIBUTING.md](https://github.com/1017toa/agent-coach/blob/main/CONTRIBUTING.md). Run the tests with:
 
 ```bash
 python -m unittest discover -s tests
@@ -198,4 +217,4 @@ python -m unittest discover -s tests
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/1017toa/agent-coach/blob/main/LICENSE)

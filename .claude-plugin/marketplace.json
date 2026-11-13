@@ -1,0 +1,13 @@
+{
+  "name": "agent-coach",
+  "owner": { "name": "agent-coach contributors", "url": "https://github.com/1017toa/agent-coach" },
+  "metadata": { "description": "agent-coach: grade and coach how you prompt Claude Code and Codex." },
+  "plugins": [
+    {
+      "name": "agent-coach",
+      "source": "./",
+      "description": "Grade and coach your Claude Code and Codex prompts from your own conversation history, against Anthropic's and OpenAI's official guides.",
+      "category": "productivity"
+    }
+  ]
+}

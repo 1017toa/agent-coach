@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,11 +9,14 @@ description = "Grade and coach your Claude Code and Codex prompts from your own 
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["claude-code", "codex", "openai-codex", "anthropic", "claude", "prompt-engineering", "prompting", "coaching", "ai-agents", "coding-agents", "agentic-coding", "developer-tools", "cli", "claude-md", "agents-md"]
 classifiers = [
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Natural Language :: English",
@@ -28,7 +31,8 @@ Issues = "https://github.com/1017toa/agent-coach/issues"
 agent-coach = "agentcoach.cli:main"
 
 [tool.setuptools]
-packages = ["agentcoach"]
+packages = ["agentcoach", "agentcoach.rubric"]
 
 [tool.setuptools.package-data]
 agentcoach = ["rubric/*.json"]
+"agentcoach.rubric" = ["*.json"]

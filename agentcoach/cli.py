@@ -137,6 +137,48 @@ def cmd_report(args) -> None:
     print(_write_report(runs, args.rubric, lang, args.no_open))
 
 
+def cmd_summary(args) -> None:
+    """Plain-text digest of the latest run, for reading in a terminal or by an agent skill."""
+    runs = load_runs()
+    lang = _lang(args, runs)
+    if not runs:
+        sys.exit(t("no_runs", lang))
+    run, rubric = runs[-1], load_rubric(args.rubric, lang)
+    names = {d["id"]: d for d in rubric["dimensions"]}
+    k = args.limit
+    print(t("sum_head", lang, date=run["created"][:10], overall=run["overall"], n=run["session_count"]))
+    scored = [(v["score"], i) for i, v in run["dimensions"].items() if v.get("score") is not None and i in names]
+    print()
+    print("## " + t("sum_weak", lang))
+    for sc, i in sorted(scored)[:3]:
+        print(f"- {names[i]['name']} {sc}: {names[i]['summary']}")
+    rewrites = [(s, c) for s in run["sessions"] for c in s.get("coaching", []) if c.get("better")]
+    if rewrites:
+        print()
+        print("## " + t("sum_rewrites", lang))
+        for s, c in rewrites[:k]:
+            dim = names.get(c.get("dimension"), {}).get("name", "")
+            print(f"- [{dim}] {s['project']} turn {c.get('turn')}")
+            print(f"  {t('sum_wrote', lang)}: {c['original']}")
+            print(f"  {t('sum_better', lang)}: {c['better']}")
+            print(f"  {t('sum_why', lang)}: {c.get('why', '')}")
+    gaps = [(s, m) for s in run["sessions"] for m in s.get("misses", []) if m.get("cause") == "prompt_gap"]
+    if gaps:
+        print()
+        print("## " + t("sum_gaps", lang))
+        for s, m in gaps[:k]:
+            print(f"- {s['project']} turn {m.get('turn')}: {m.get('original', '')}")
+            print(f"  {m.get('what_went_wrong', '')}")
+            if m.get("better"):
+                print(f"  {t('sum_better', lang)}: {m['better']}")
+    themes = (run.get("misses") or {}).get("themes") or []
+    if themes:
+        print()
+        print("## " + t("sum_rules", lang))
+        for th in themes:
+            print(f"- {th['rule']}  ({th['where']}; {th['title']})")
+
+
 def cmd_history(args) -> None:
     runs = load_runs()
     lang = _lang(args, runs)
@@ -194,6 +236,11 @@ def main(argv=None) -> None:
     common(sp, window=False)
     sp.add_argument("--no-open", action="store_true", help=h("h_noopen"))
     sp.set_defaults(func=cmd_report)
+
+    sp = sub.add_parser("summary", help=h("h_summary"))
+    common(sp, window=False)
+    sp.add_argument("--limit", type=int, default=5)
+    sp.set_defaults(func=cmd_summary)
 
     sp = sub.add_parser("history", help=h("h_history"))
     common(sp, window=False)

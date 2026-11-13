@@ -12,8 +12,12 @@ What it does:
 - Masks secrets and contact details before sending anything to the judge. Zero dependencies, Python 3.9+, MIT license. English and Korean.
 
 Install and run:
-pip install git+https://github.com/1017toa/agent-coach.git
+pipx install agent-coach   (or uv tool install agent-coach, pip install agent-coach)
 agent-coach run
+
+As a plugin (the agent runs it and coaches in chat):
+Claude Code: /plugin install agent-coach --marketplace 1017toa/agent-coach, then /agent-coach:coach
+Codex: codex plugin marketplace add 1017toa/agent-coach && codex plugin add agent-coach@agent-coach
 
 ## Docs
 - [README](README.md): overview, usage, FAQ

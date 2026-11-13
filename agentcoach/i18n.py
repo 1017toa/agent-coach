@@ -69,6 +69,17 @@ M = {
     "h_noopen": {"en": "Don't open the report in a browser", "ko": "리포트를 브라우저로 열지 않음"},
     "h_report": {"en": "Rebuild the report from saved runs", "ko": "저장된 기록으로 리포트만 다시 만듭니다"},
     "h_history": {"en": "Score table per run", "ko": "회차별 점수 표"},
+    "h_summary": {"en": "Print the latest run as text: weakest habits, rewrites, missed responses, rules to add",
+                  "ko": "최근 회차를 글로 출력: 약한 습관, 고쳐 쓰기, 놓친 응답, 추가할 규칙"},
+    "sum_head": {"en": "agent-coach · {date} · overall {overall}/100 · {n} conversations",
+                 "ko": "agent-coach · {date} · 종합 {overall}/100 · 대화 {n}개"},
+    "sum_weak": {"en": "Weakest habits", "ko": "약한 습관"},
+    "sum_rewrites": {"en": "Rewrites of your prompts", "ko": "내 지시 고쳐 쓰기"},
+    "sum_gaps": {"en": "Missed responses caused by a gap in your prompt", "ko": "내 지시의 빈틈 때문에 놓친 응답"},
+    "sum_rules": {"en": "Rules worth adding", "ko": "추가할 만한 규칙"},
+    "sum_wrote": {"en": "wrote", "ko": "쓴 지시"},
+    "sum_better": {"en": "better", "ko": "이렇게"},
+    "sum_why": {"en": "why", "ko": "이유"},
 }
 
 

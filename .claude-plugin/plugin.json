@@ -1,0 +1,11 @@
+{
+  "name": "agent-coach",
+  "displayName": "agent-coach",
+  "description": "Grade and coach your Claude Code and Codex prompts from your own conversation history, against Anthropic's and OpenAI's official guides.",
+  "version": "0.1.0",
+  "author": { "name": "agent-coach contributors", "url": "https://github.com/1017toa/agent-coach" },
+  "homepage": "https://github.com/1017toa/agent-coach",
+  "repository": "https://github.com/1017toa/agent-coach",
+  "license": "MIT",
+  "keywords": ["prompting", "coaching", "claude-code", "codex", "prompt-engineering", "claude-md", "agents-md"]
+}
