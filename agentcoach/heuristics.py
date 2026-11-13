@@ -23,6 +23,12 @@ CORRECTION = R(r"^(아니|아냐|그게 아니|다시|또|여전히|still|no[,. 
 ERRDUMP = R(r"(Traceback|Error:|Exception|at .+:\d+|\bline \d+|```)")
 STOPS = R(r"(멈춰|멈추고|물어보고|물어봐|확인받|승인(하면|받|한 ?뒤)|제출 ?전|하기 ?전에|직전에|묻지 ?말고|알아서 (진행|끝까지)|ask me|stop and|before (you )?(submit|delete|push|send)|keep going|don'?t ask)")
 DURABLE = R(r"(앞으로|항상|매번|무조건|절대|from now on|always|every time|never)")
+MISS_SIG = [
+    ("repeat", R(r"(라니까|랬잖|했잖아|말했잖|말했는데|아까 (말|얘기)|분명히 (말|얘기))")),
+    ("redo", R(r"(되돌려|원래대로|원상복구|롤백|revert|undo|다시 해)")),
+    ("mishap", R(r"(왜 (이렇게|그렇게|이걸|그걸|.{0,12}했)|하지 말(라|랬)|손해|날렸|망가|잘못 (눌|했|만))")),
+    ("correction", R(r"^\s*(아니|아냐|그게 아니|그거 말고|그런 뜻|틀렸|안 ?바뀌|여전히|똑같|still|no[,. ]|wrong|not what)")),
+]
 RECORD = R(r"(CLAUDE\.md|AGENTS\.md|메모리|기억해|규칙(으로|에)|스킬|skill|훅|hook|memory)")
 
 
@@ -111,5 +117,18 @@ def score_session(s: Session, rubric: dict) -> dict:
         sc = dims.get(did)
         out[did] = {"score": sc, "evidence_turn": first_turn(rx_for[did]) if did in rx_for else None,
                     "note": ""}
+    # misses: what happened next tells us the turn missed; offline we can't tell whose fault it was
+    misses = []
+    for i, t in enumerate(s.turns[:-1]):
+        nxt = s.turns[i + 1]
+        if t.slash or nxt.slash:
+            continue
+        for kind, rx in MISS_SIG:
+            if rx.search(nxt.text.strip()[:160]):
+                misses.append({"turn": t.index, "signal_turn": nxt.index, "signal": kind, "cause": "unclassified",
+                               "context_was_enough": None, "original": t.text[:160], "what_went_wrong": nxt.text[:160],
+                               "better": "", "why": ""})
+                break
     return {"task_summary": (ft[:80] + "…") if len(ft) > 80 else ft, "dimensions": out, "coaching": [],
+            "misses": misses[:8],
             "judge": "heuristic"}

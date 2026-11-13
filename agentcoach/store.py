@@ -29,6 +29,22 @@ def aggregate(results: list[dict], rubric: dict) -> dict:
     return {"overall": round(sum(vals) / len(vals)) if vals else None, "dimensions": out}
 
 
+def miss_summary(sessions: list[dict]) -> dict:
+    """How often the user didn't get what they wanted, and how much of that was their own prompt gap."""
+    by_cause: dict[str, int] = {}
+    turns = 0
+    for s in sessions:
+        turns += s.get("turns", 0)
+        for m in s.get("misses", []):
+            by_cause[m["cause"]] = by_cause.get(m["cause"], 0) + 1
+    total = sum(by_cause.values())
+    gaps = by_cause.get("prompt_gap", 0)
+    return {"total": total, "by_cause": by_cause, "turns": turns,
+            "gap_share": round(gaps / total * 100) if total else None,
+            "gaps_per_100_turns": round(gaps / turns * 100, 1) if turns else None,
+            "themes": []}
+
+
 def build_run(sessions: list[Session], results: dict[str, dict], rubric: dict,
               window_start: str | None, judge: str) -> dict:
     per = []
@@ -49,8 +65,11 @@ def build_run(sessions: list[Session], results: dict[str, dict], rubric: dict,
             "dimensions": dims,
             "coaching": [{**c, "original": redact(c.get("original", "")),
                           "better": redact(c.get("better", ""))} for c in r.get("coaching", [])],
+            "misses": [{**m, **{k: redact(m.get(k, "")) for k in ("original", "better", "what_went_wrong", "why")}}
+                       for m in r.get("misses", [])],
         })
     agg = aggregate(per, rubric)
+    agg["misses"] = miss_summary(per)
     now = datetime.now().astimezone()
     return {
         "schema": 1,

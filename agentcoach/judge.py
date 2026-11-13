@@ -19,7 +19,7 @@ from .paths import judge_workdir
 from .redact import redact
 
 MAX_TURN_CHARS = 1500
-MAX_SESSION_CHARS = 14000
+MAX_SESSION_CHARS = 40000   # misses need the whole session, not just its opening
 
 
 def render_transcript(s: Session) -> str:
@@ -39,6 +39,27 @@ def render_transcript(s: Session) -> str:
         budget -= len(block)
         lines.append(block)
     return "".join(lines)
+
+
+CAUSES = ("prompt_gap", "agent_error", "changed_mind", "external")
+SIGNALS = ("correction", "repeat", "redo", "mishap", "ask_back", "frustration")
+MISS_ITEM = {
+    "type": "object",
+    "properties": {
+        "turn": {"type": "integer"},
+        "signal_turn": {"type": "integer"},
+        "signal": {"type": "string", "enum": list(SIGNALS)},
+        "cause": {"type": "string", "enum": list(CAUSES)},
+        "context_was_enough": {"type": "boolean"},
+        "original": {"type": "string"},
+        "what_went_wrong": {"type": "string"},
+        "better": {"type": "string"},
+        "why": {"type": "string"},
+    },
+    "required": ["turn", "signal_turn", "signal", "cause", "context_was_enough", "original",
+                 "what_went_wrong", "better", "why"],
+    "additionalProperties": False,
+}
 
 
 def output_schema(rubric: dict) -> dict:
@@ -77,8 +98,9 @@ def output_schema(rubric: dict) -> dict:
                     "additionalProperties": False,
                 },
             },
+            "misses": {"type": "array", "maxItems": 8, "items": MISS_ITEM},
         },
-        "required": ["task_summary", "dimensions", "coaching"],
+        "required": ["task_summary", "dimensions", "coaching", "misses"],
         "additionalProperties": False,
     }
 
@@ -110,6 +132,26 @@ using only facts visible in the transcript (no invented file names; use <placeho
 "why" = one sentence in {out_lang} tying the rewrite to the guide.
 If nothing is worth coaching, return an empty list.
 task_summary = one short line in {out_lang} describing what the session was about.
+
+misses = moments where the user did NOT get what they wanted from a turn (at most 8, most costly first).
+Long conversations build context, so a short instruction like "응 해줘" is fine when context already made
+the intent clear; never treat brevity alone as a miss. Evidence comes from what happened next: the user
+corrected the result, repeated an earlier instruction, asked to redo/undo, reported damage or an unwanted
+action, showed frustration, or the agent had to ask back for missing info.
+- turn = the USER turn whose result missed; signal_turn = the USER turn that shows it.
+- signal: correction | repeat | redo | mishap | ask_back | frustration
+- context_was_enough: true if a careful agent could have inferred the intent from the conversation so far.
+- cause: prompt_gap = the intent depended on something only the user knew (a preference, constraint,
+  number, scope, where to stop, which item) that the turn didn't say AND context didn't cover;
+  agent_error = context/instruction was enough and the agent misread, forgot or ignored it;
+  changed_mind = the user decided something new after seeing the result; external = tool/site/login limits.
+- original: short verbatim excerpt (<=160 chars) of the missed turn.
+- what_went_wrong: one sentence in {out_lang}.
+- better: ONLY for prompt_gap, the same turn in the user's own tone adding just the missing piece
+  (keep it short; don't restate what context already covered). Empty string for other causes.
+- why: one sentence in {out_lang}: for prompt_gap the single missing piece; otherwise why it was not the
+  user's prompt problem.
+Never copy personal identifiers (names, addresses, ID/phone/card numbers) into any field; write <주소>, <이름>.
 
 Rubric:
 {chr(10).join(dims)}
@@ -190,7 +232,7 @@ def _codex_strict(schema: dict) -> dict:
 
 
 def judge_session(s: Session, rubric: dict, backend: str, model: str | None = None,
-                  lang: str = "ko", timeout: int = 300) -> dict:
+                  lang: str = "ko", timeout: int = 600) -> dict:
     schema = output_schema(rubric)
     prompt = build_prompt(s, rubric, lang)
     run = _run_claude if backend == "claude" else _run_codex
@@ -210,6 +252,14 @@ def _clean(res: dict, rubric: dict) -> None:
         v.setdefault("note", "")
         dims[d["id"]] = v
     res["coaching"] = [c for c in res.get("coaching") or [] if c.get("dimension") in dims][:2]
+    misses = []
+    for m in res.get("misses") or []:
+        if m.get("cause") not in CAUSES:
+            continue
+        if m["cause"] != "prompt_gap":
+            m["better"] = ""          # only the user's own gaps get a rewrite
+        misses.append(m)
+    res["misses"] = misses[:8]
 
 
 def judge_many(sessions: list[Session], rubric: dict, backend: str, model: str | None,
@@ -226,3 +276,53 @@ def judge_many(sessions: list[Session], rubric: dict, backend: str, model: str |
             if on_done:
                 on_done(s, results[s.id])
     return results
+
+
+GAP_SCHEMA = {
+    "type": "object",
+    "properties": {"themes": {"type": "array", "maxItems": 6, "items": {
+        "type": "object",
+        "properties": {
+            "title": {"type": "string"},
+            "items": {"type": "array", "items": {"type": "integer"}},
+            "rule": {"type": "string"},
+            "where": {"type": "string", "enum": ["CLAUDE.md/AGENTS.md", "memory", "skill", "hook", "prompt"]},
+        },
+        "required": ["title", "items", "rule", "where"],
+        "additionalProperties": False}}},
+    "required": ["themes"],
+    "additionalProperties": False,
+}
+
+
+def summarize_gaps(gaps: list[dict], backend: str, model: str | None, lang: str = "ko") -> list[dict]:
+    """Group prompt gaps that recur across conversations and propose one durable rule per group.
+
+    A gap that keeps coming back ("use ego-browser", "affiliation is 개인") shouldn't be fixed by typing it
+    again every time; it belongs in CLAUDE.md/AGENTS.md, memory, a skill or a hook.
+    """
+    if len(gaps) < 2:
+        return []
+    out_lang = "Korean" if lang == "ko" else "English"
+    lines = chr(10).join(f"[{i}] ({g['project']}) missing: {g['why']} | turn: {g['original'][:120]}" for i, g in enumerate(gaps))
+    prompt = f"""Below are moments where a person's instruction to an AI agent missed one piece of information
+only they knew. Group the ones that are the SAME recurring piece of knowledge or preference (it shows up in
+2+ items, ideally across different projects). Ignore one-off facts (a single date, a single count).
+For each group: title (short, {out_lang}), items (the [index] numbers), rule (one line the person could put
+in a persistent instruction file so they never have to say it again, {out_lang}, no personal identifiers),
+where (best home: CLAUDE.md/AGENTS.md for project rules, memory for personal facts/preferences, skill for
+a repeatable procedure, hook for something that must never be skipped, prompt if it truly varies per task).
+Return an empty list if nothing recurs.
+
+{lines}"""
+    run = _run_claude if backend == "claude" else _run_codex
+    try:
+        res = run(prompt, GAP_SCHEMA, model, 300)
+    except Exception:
+        return []
+    themes = []
+    for t in res.get("themes") or []:
+        idx = [i for i in t.get("items", []) if isinstance(i, int) and 0 <= i < len(gaps)]
+        if len(idx) >= 2:
+            themes.append({**t, "items": idx})
+    return themes

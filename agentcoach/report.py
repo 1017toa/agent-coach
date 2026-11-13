@@ -20,6 +20,8 @@ def _normalize(runs: list[dict], rubric: dict) -> None:
 
 def _payload(runs: list[dict], rubric: dict) -> dict:
     slim_runs = [{k: r.get(k) for k in ("created", "overall", "dimensions", "judge", "session_count", "sources")}
+                 | {"gap_share": (r.get("misses") or {}).get("gap_share"),
+                    "gaps_per_100_turns": (r.get("misses") or {}).get("gaps_per_100_turns")}
                  | {"rubric_version": r.get("rubric", {}).get("version", 1)} for r in runs]
     cur = runs[-1]
     return {
@@ -30,7 +32,7 @@ def _payload(runs: list[dict], rubric: dict) -> dict:
                            for d in rubric["dimensions"]],
         },
         "runs": slim_runs,
-        "current": {k: cur.get(k) for k in ("created", "overall", "judge", "session_count", "sources", "sessions")},
+        "current": {k: cur.get(k) for k in ("created", "overall", "judge", "session_count", "sources", "sessions", "misses")},
     }
 
 
@@ -131,6 +133,17 @@ th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertic
 .score-row{display:grid;grid-template-columns:110px 44px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);align-items:start}
 .pill{font-size:12px;font-weight:600;text-align:center;border-radius:6px;padding:1px 0}
 .p2{background:var(--good-bg);color:var(--good)}.p1{background:var(--warn-bg);color:var(--warn)}.p0{background:var(--bad-bg);color:var(--bad)}.pn{background:var(--surface2);color:var(--muted)}
+/* misses */
+.stack{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--surface2);margin:8px 0 6px;gap:2px}
+.stack span{display:block;height:100%}
+.c-gap{background:var(--accent)}.c-agent{background:var(--prev)}.c-mind{background:var(--grid)}.c-ext{background:var(--line)}
+.keys{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text2)}
+.keys i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:baseline}
+.seg{display:flex;gap:4px;flex-wrap:wrap;margin:10px 0}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:3px 10px;cursor:pointer;font-size:12px}
+.seg button[aria-pressed="true"]{background:var(--text);color:var(--surface);border-color:var(--text)}
+.theme{background:var(--warn-bg)}
+.lbl{font-size:11px;font-weight:600;color:var(--text2)}
 /* trend */
 #v-trend{grid-template-rows:auto 1fr;gap:16px}
 .trends{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;align-content:start}
@@ -165,6 +178,7 @@ th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertic
 <nav class="tabs" role="tablist">
  <button role="tab" data-tab="overview">개요</button>
  <button role="tab" data-tab="coach">항목별 코칭</button>
+ <button role="tab" data-tab="misses">놓친 응답</button>
  <button role="tab" data-tab="sessions">대화별 결과</button>
  <button role="tab" data-tab="trend">회차별 변화</button>
 </nav>
@@ -191,6 +205,15 @@ th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertic
  <section class="view md" id="v-coach">
   <div class="card c-list"><h2>항목</h2><ul class="barlist list scroll" id="coach-list"></ul></div>
   <div class="card c-detail detail" id="coach-detail"></div>
+ </section>
+
+ <section class="view md" id="v-misses">
+  <div class="card c-list">
+   <div id="miss-sum"></div>
+   <div class="seg" id="miss-filter"></div>
+   <ul class="slist list scroll" id="miss-list"></ul>
+  </div>
+  <div class="card c-detail detail" id="miss-detail"></div>
  </section>
 
  <section class="view md" id="v-sessions">
@@ -233,19 +256,20 @@ $("#theme").onclick = () => {
 };
 
 /* ---------- routing ---------- */
-const views = ["overview", "coach", "sessions", "trend"];
+const views = ["overview", "coach", "misses", "sessions", "trend"];
 function go(tab, arg, push = true) {
   if (!views.includes(tab)) tab = "overview";
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + tab));
   if (tab === "coach") showDim(arg || state.dim, !!arg);
   if (tab === "sessions") showSession(arg || state.sess, !!arg);
+  if (tab === "misses") showMiss(arg || state.miss, !!arg);
   if (push) history.replaceState(null, "", "#" + tab + (arg ? "/" + arg : ""));
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".md").forEach(m => m.classList.remove("showing")); go(b.dataset.tab);
 });
-const state = {dim: null, sess: null};
+const state = {dim: null, sess: null, miss: null, cause: "prompt_gap"};
 
 /* ---------- overview ---------- */
 const ranked = dims.filter(d => sc(d.id) != null).sort((a, b) => sc(a.id) - sc(b.id));
@@ -255,10 +279,11 @@ $("#focus").innerHTML = ranked.slice(0, 3).map(d =>
 const best = ranked[ranked.length - 1];
 $("#best").innerHTML = best ? `가장 잘하는 것: <b>${esc(best.name)}</b> (${sc(best.id)}점)` : "";
 const nCoach = sessions.reduce((a, s) => a + (s.coaching || []).length, 0);
-const nMissed = sessions.reduce((a, s) => a + Object.values(s.dimensions || {}).filter(v => v.score === 0).length, 0);
+const MS = D.current.misses || {total: 0, by_cause: {}, themes: []};
+const nGap = (MS.by_cause || {}).prompt_gap || 0;
 $("#tiles").innerHTML = `<button data-go="sessions"><b>${sessions.length}</b><span>채점한 대화</span></button>
  <button data-go="coach"><b>${nCoach}</b><span>고쳐 쓰기 예시</span></button>
- <button data-go="sessions"><b>${nMissed}</b><span>빠뜨린 판정</span></button>`;
+ <button data-go="misses"><b>${nGap}<small class="muted" style="font-size:13px"> / ${MS.total}</small></b><span>놓친 응답 중 내 지시 빈틈</span></button>`;
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
 $("#about").innerHTML =`${esc(D.rubric.title)}. 점수는 해당 항목이 필요했던 대화만 평균 낸 값입니다.`;
 const barItem = d => {
@@ -358,12 +383,75 @@ function showSession(id, open) {
   if ((s.coaching || []).length) h += `<h3>이 대화의 고쳐 쓰기</h3>` + s.coaching.map(c => {
     const d = dims.find(x => x.id === c.dimension) || {}; return `<div class="coach"><span class="chip">${esc(d.name || c.dimension)}</span>
     <div class="ex"><div class="before"><b>실제로 쓴 지시 · turn ${c.turn}</b>${esc(c.original)}</div><div class="after"><b>이렇게 썼다면</b>${esc(c.better)}</div></div><div class="why">${esc(c.why)}</div></div>`; }).join("");
+  const sm = misses.filter(m => m.s.id === s.id);
+  if (sm.length) h += `<h3 style="margin-top:14px">원하는 응답을 못 받은 곳 <span class="chip">${sm.length}</span></h3>` + sm.map(m => missBlock(m, false)).join("");
   h += `<h3 style="margin-top:14px">항목별 판정</h3>` + dims.map(d => { const v = s.dimensions[d.id] || {};
     return `<div class="score-row"><a href="#coach/${d.id}" data-dim="${d.id}">${esc(d.name)}</a>${pill(v.score)}<div>${esc(v.note || (v.score == null ? "해당 없음" : ""))}${v.excerpt ? `<div class="sess">turn ${v.evidence_turn}: “${esc(v.excerpt)}”</div>` : ""}</div></div>`; }).join("");
   $("#sess-detail").innerHTML = h; $("#sess-detail").scrollTop = 0;
   if (open) $("#v-sessions").classList.add("showing");
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-back]")) document.querySelectorAll(".md").forEach(m => m.classList.remove("showing")); });
+
+/* ---------- misses ---------- */
+const CAUSE = {prompt_gap: ["내 지시의 빈틈", "c-gap"], agent_error: ["에이전트 잘못", "c-agent"],
+  changed_mind: ["마음이 바뀜", "c-mind"], external: ["외부 요인", "c-ext"], unclassified: ["미분류", "c-ext"]};
+const SIGNAL = {correction: "바로잡음", repeat: "같은 말 반복", redo: "다시/되돌리기", mishap: "사고·손해", ask_back: "되물음", frustration: "답답함"};
+const misses = [];
+sessions.forEach(s => (s.misses || []).forEach((m, i) => misses.push({...m, s, key: s.id + ":" + i})));
+const themes = (MS.themes || []).map((t, i) => ({...t, key: "theme:" + i}));
+(function summary() {
+  const bc = MS.by_cause || {}, tot = MS.total || 0;
+  const order = ["prompt_gap", "agent_error", "changed_mind", "external", "unclassified"].filter(k => bc[k]);
+  $("#miss-sum").innerHTML = `<h2>원하는 응답을 못 받은 곳 <span class="muted small">${tot}곳</span></h2>
+   <div class="stack">${order.map(k => `<span class="${CAUSE[k][1]}" style="width:${bc[k] / tot * 100}%" title="${CAUSE[k][0]} ${bc[k]}"></span>`).join("")}</div>
+   <div class="keys">${order.map(k => `<span><i class="${CAUSE[k][1]}"></i>${CAUSE[k][0]} ${bc[k]}</span>`).join("")}</div>
+   <p class="small muted" style="margin:8px 0 0">짧은 지시라도 맥락으로 통했으면 문제 삼지 않습니다. 고쳐 쓰기는 <b>내 지시의 빈틈</b>에만 붙습니다.</p>`;
+  const opts = [["themes", `규칙 후보 ${themes.length}`], ...order.map(k => [k, `${CAUSE[k][0]} ${bc[k]}`])];
+  if (!themes.length) opts.shift();
+  if (!opts.find(o => o[0] === state.cause)) state.cause = opts.length ? opts[0][0] : "prompt_gap";
+  $("#miss-filter").innerHTML = opts.map(([k, l]) => `<button data-cause="${k}" aria-pressed="${k === state.cause}">${esc(l)}</button>`).join("");
+  $("#miss-filter").onclick = e => { const b = e.target.closest("[data-cause]"); if (!b) return; state.cause = b.dataset.cause;
+    document.querySelectorAll("#miss-filter button").forEach(x => x.setAttribute("aria-pressed", x === b)); state.miss = null; showMiss(null, false); };
+})();
+function listMisses() {
+  const items = state.cause === "themes" ? themes : misses.filter(m => m.cause === state.cause);
+  $("#miss-list").innerHTML = items.map(m => m.key.startsWith("theme:")
+    ? `<li data-miss="${m.key}"><div><b>${esc(m.title)}</b></div><div class="sess">${m.refs.length}번 반복 · ${esc(m.where)}</div></li>`
+    : `<li data-miss="${esc(m.key)}"><div>${esc(m.original)}</div><div class="sess">${esc(SIGNAL[m.signal] || m.signal)} · ${day(m.s.ended)} · ${esc(m.s.project)}</div></li>`).join("")
+    || `<li class="muted">해당하는 곳이 없습니다</li>`;
+  return items;
+}
+$("#miss-list").addEventListener("click", e => { const li = e.target.closest("li[data-miss]"); if (li) go("misses", li.dataset.miss); });
+function missBlock(m, withSession = true) {
+  const c = CAUSE[m.cause] || CAUSE.unclassified;
+  let h = `<div class="coach"><span class="chip"><i class="${c[1]}" style="display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px"></i>${c[0]}</span><span class="chip">${esc(SIGNAL[m.signal] || m.signal)}</span>`;
+  if (m.better) h += `<div class="ex"><div class="before"><b>실제로 쓴 지시 · turn ${m.turn}</b>${esc(m.original)}</div><div class="after"><b>이 한 조각만 더했다면</b>${esc(m.better)}</div></div>`;
+  else h += `<div class="ex" style="grid-template-columns:1fr"><div class="before" style="background:var(--surface2)"><b>지시 · turn ${m.turn}</b>${esc(m.original)}</div></div>`;
+  h += `<div class="why"><span class="lbl">무슨 일이 있었나</span> ${esc(m.what_went_wrong)}</div>`;
+  if (m.why) h += `<div class="why"><span class="lbl">${m.cause === "prompt_gap" ? "빠진 것" : "내 지시 문제가 아닌 이유"}</span> ${esc(m.why)}</div>`;
+  if (withSession) h += `<div class="sess"><a href="#sessions/${esc(m.s.id)}" data-sess="${esc(m.s.id)}">${sessLine(m.s)}</a></div>`;
+  return h + `</div>`;
+}
+function showMiss(key, open) {
+  const items = listMisses();
+  const m = items.find(x => x.key === key) || items[0];
+  if (!m) { $("#miss-detail").innerHTML = '<p class="muted">놓친 응답이 없습니다. LLM 채점(--judge claude/codex)으로 돌려야 원인까지 나뉩니다.</p>'; return; }
+  state.miss = m.key;
+  document.querySelectorAll("#miss-list li[data-miss]").forEach(li => li.setAttribute("aria-current", li.dataset.miss === m.key));
+  let h = `<button class="iconbtn back" data-back>← 목록</button>`;
+  if (m.key.startsWith("theme:")) {
+    h += `<h2 style="font-size:17px;margin:0">${esc(m.title)}</h2><div class="sess">대화 ${new Set(m.refs.map(r => r.session)).size}곳에서 ${m.refs.length}번 빠짐 · 추천 위치: ${esc(m.where)}</div>
+     <div class="ex" style="grid-template-columns:1fr"><div class="after"><b>규칙 파일에 이 한 줄을 넣어 두면 매번 말하지 않아도 됩니다</b>${esc(m.rule)}</div></div>
+     <h3 style="margin-top:14px">빠졌던 지시</h3>` +
+     m.refs.map(r => misses.find(x => x.s.id === r.session && x.turn === r.turn)).filter(Boolean).map(x => missBlock(x)).join("");
+  } else {
+    h += `<h2 style="font-size:16px;margin:0 0 4px">${esc(m.s.task_summary)}</h2>` + missBlock(m);
+    const t = themes.find(t => t.refs.some(r => r.session === m.s.id && r.turn === m.turn));
+    if (t) h += `<div class="ex" style="grid-template-columns:1fr"><div class="theme"><b>반복되는 빈틈: ${esc(t.title)}</b>${esc(t.rule)}</div></div>`;
+  }
+  $("#miss-detail").innerHTML = h; $("#miss-detail").scrollTop = 0;
+  if (open) $("#v-misses").classList.add("showing");
+}
 
 /* ---------- trend ---------- */
 const versions = [...new Set(runs.map(r => r.rubric_version))];
@@ -378,7 +466,8 @@ function spark(pts) {
   p.forEach((x, i) => s += `<circle class="dot" cx="${xs[i]}" cy="${ys[i]}" r="4"><title>${x[0]}: ${x[1]}점</title></circle>`);
   return s + "</svg>";
 }
-const series = [["종합", null, runs.map(r => [day(r.created), r.overall])]].concat(dims.map(d => [d.name, d.id, runs.map(r => [day(r.created), (r.dimensions[d.id] || {}).score])]));
+const series = [["종합", null, runs.map(r => [day(r.created), r.overall])],
+  ["놓친 응답 중 내 빈틈 비율(낮을수록 좋음)", null, runs.map(r => [day(r.created), r.gap_share])]].concat(dims.map(d => [d.name, d.id, runs.map(r => [day(r.created), (r.dimensions[d.id] || {}).score])]));
 $("#trends").innerHTML = series.map(([name, id, pts]) => { const last = [...pts].reverse().find(x => x[1] != null);
   return `<div class="card"${id ? ` data-dim="${id}" style="cursor:pointer"` : ""}><div style="display:flex;justify-content:space-between"><h3>${esc(name)}</h3><span class="muted">${last ? last[1] : "–"}</span></div>${spark(pts)}</div>`; }).join("");
 

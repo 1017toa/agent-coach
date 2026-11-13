@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from . import __version__
 from .collect import collect, pick_sample
 from .heuristics import score_session
-from .judge import judge_many
+from .judge import judge_many, summarize_gaps
 from .paths import coach_home
 from .report import render
 from .rubric import load_rubric
@@ -94,11 +94,21 @@ def cmd_run(args) -> None:
     label = judge if judge == "heuristic" else f"{judge}:{args.model or 'default'}"
     run = build_run(sample, results, rubric, since.isoformat() if since else None, label)
     run["window_end"] = datetime.now(timezone.utc).isoformat()
+    gaps = [{**m, "project": sess["project"], "session": sess["id"]}
+            for sess in run["sessions"] for m in sess.get("misses", []) if m["cause"] == "prompt_gap"]
+    if judge in ("claude", "codex") and len(gaps) >= 2:
+        print("반복되는 지시 빈틈을 묶는 중…", flush=True)
+        themes = summarize_gaps(gaps, judge, args.model, args.lang)
+        for t in themes:
+            t["refs"] = [{"session": gaps[i]["session"], "turn": gaps[i]["turn"]} for i in t.pop("items")]
+        run["misses"]["themes"] = themes
     path = save_run(run)
     runs = load_runs()
     out = coach_home() / "report.html"
     out.write_text(render(runs, rubric), encoding="utf-8")
-    print(f"\n종합 {run['overall']}점 · 기록 {path}\n리포트 {out}")
+    ms = run["misses"]
+    print(f"\n종합 {run['overall']}점 · 놓친 응답 {ms['total']}곳 중 내 지시 빈틈 {ms['by_cause'].get('prompt_gap', 0)}곳"
+          f"\n기록 {path}\n리포트 {out}")
     if not args.no_open:
         webbrowser.open(out.as_uri())
 

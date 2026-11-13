@@ -109,7 +109,38 @@ class Scoring(unittest.TestCase):
         self.assertIn("멈출 지점", html_out)
 
 
+class Misses(unittest.TestCase):
+    def test_clean_and_summary(self):
+        from agentcoach.judge import _clean
+        from agentcoach.store import miss_summary
+        rubric = load_rubric()
+        res = {"dimensions": {}, "coaching": [], "misses": [
+            {"turn": 1, "signal_turn": 2, "signal": "correction", "cause": "prompt_gap", "context_was_enough": False,
+             "original": "오사카로 찾아줘", "what_went_wrong": "인원 모름", "better": "오사카로 찾아줘. 2명이야", "why": "인원"},
+            {"turn": 3, "signal_turn": 4, "signal": "repeat", "cause": "agent_error", "context_was_enough": True,
+             "original": "제출해", "what_went_wrong": "x", "better": "should be dropped", "why": "y"},
+            {"turn": 5, "signal_turn": 6, "signal": "repeat", "cause": "bogus", "context_was_enough": True,
+             "original": "", "what_went_wrong": "", "better": "", "why": ""}]}
+        _clean(res, rubric)
+        self.assertEqual(len(res["misses"]), 2)
+        self.assertEqual(res["misses"][1]["better"], "")
+        summ = miss_summary([{"turns": 10, "misses": res["misses"]}])
+        self.assertEqual(summ["gap_share"], 50)
+        self.assertEqual(summ["gaps_per_100_turns"], 10.0)
+
+    def test_heuristic_flags_followup_correction(self):
+        rubric = load_rubric()
+        p = _write([claude_user("오사카로 찾아줘"), claude_user("아니 2명이라니까")])
+        r = score_session(parse_claude_file(p), rubric)
+        self.assertEqual(r["misses"][0]["turn"], 1)
+        self.assertEqual(r["misses"][0]["cause"], "unclassified")
+
+
 class Redact(unittest.TestCase):
+    def test_address(self):
+        self.assertNotIn("101동", redact("배송지는 행복로 12, 101동 202호로 바꿔"))
+        self.assertEqual(redact("유니버설로 3일"), "유니버설로 3일")
+
     def test_masks(self):
         t = redact("key sk-ant-abcdefghijklmnopqrstuv mail a.b@x.com 010-1234-5678")
         self.assertNotIn("sk-ant", t)
