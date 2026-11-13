@@ -9,6 +9,19 @@ description = "Personal coach for how you direct Claude Code and Codex, graded a
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []
+license = {text = "MIT"}
+keywords = ["claude-code", "codex", "prompting", "coaching", "ai-agents", "developer-tools"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Natural Language :: Korean",
+]
+
+[project.urls]
+Homepage = "https://github.com/1017toa/agent-coach"
 
 [project.scripts]
 agent-coach = "agentcoach.cli:main"

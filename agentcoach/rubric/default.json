@@ -16,19 +16,27 @@
     },
     "claude-ai-fluency": {
       "title": "AI 역량: 프레임워크 및 기초 (Claude Academy)",
-      "url": "https://academy.claude.com/ko/courses/ai-fluency-framework-foundations"
+      "url": "https://academy.claude.com/ko/courses/ai-fluency-framework-foundations",
+      "title_en": "AI Fluency: Framework & Foundations (Claude Academy)",
+      "url_en": "https://academy.claude.com/courses/ai-fluency-framework-foundations"
     },
     "claude-code-101": {
       "title": "Claude Code 101 (Claude Academy)",
-      "url": "https://academy.claude.com/ko/courses/claude-code-101"
+      "url": "https://academy.claude.com/ko/courses/claude-code-101",
+      "title_en": "Claude Code 101 (Claude Academy)",
+      "url_en": "https://academy.claude.com/courses/claude-code-101"
     },
     "claude-code-in-action": {
       "title": "Claude Code 실전 활용 (Claude Academy)",
-      "url": "https://academy.claude.com/ko/courses/claude-code-in-action"
+      "url": "https://academy.claude.com/ko/courses/claude-code-in-action",
+      "title_en": "Claude Code in Action (Claude Academy)",
+      "url_en": "https://academy.claude.com/courses/claude-code-in-action"
     },
     "claude-101": {
       "title": "Claude 101 (Claude Academy)",
-      "url": "https://academy.claude.com/ko/courses/claude-101"
+      "url": "https://academy.claude.com/ko/courses/claude-101",
+      "title_en": "Claude 101 (Claude Academy)",
+      "url_en": "https://academy.claude.com/courses/claude-101"
     },
     "claude-opus-5-5-guide": {
       "title": "Getting the most out of Opus 5.5 in Claude and Claude Code (claude.dev)",
@@ -64,13 +72,38 @@
       "look_for": "States the goal and names the file/module/screen, describes the symptom or current behavior, gives repro steps or relevant background. Missing when the prompt is a bare goal like 'fix the login bug' and the agent had to guess or ask.",
       "applies_when": "Any task that changes or investigates something concrete. Not applicable to open-ended exploration or casual questions.",
       "guide": [
-        {"source": "codex-best-practices", "section": "Strong first use: Context and prompts", "quote_ko": "프롬프트에 목표(Goal)와 맥락(Context)을 넣는다. 관련 파일·폴더·문서·예시·에러를 짚고 @로 붙인다."},
-        {"source": "claude-best-practices", "section": "Write a specific prompt", "quote_ko": "파일을 지목하고 증상을 설명하고 '고쳐진 상태'가 무엇인지 처음에 말하면 교정 한 바퀴를 아낀다."},
-        {"source": "claude-ai-fluency", "section": "효과적인 프롬프팅 기법", "quote_ko": "맥락 제공: 원하는 내용, 그 이유, 관련 배경을 구체적으로 설명한다."}
+        {
+          "source": "codex-best-practices",
+          "section": "Strong first use: Context and prompts",
+          "quote": "프롬프트에 목표(Goal)와 맥락(Context)을 넣는다. 관련 파일·폴더·문서·예시·에러를 짚고 @로 붙인다.",
+          "quote_en": "Put the Goal and Context in the prompt: the files, folders, docs, examples or errors that matter; @-mention them."
+        },
+        {
+          "source": "claude-best-practices",
+          "section": "Write a specific prompt",
+          "quote": "파일을 지목하고 증상을 설명하고 '고쳐진 상태'가 무엇인지 처음에 말하면 교정 한 바퀴를 아낀다.",
+          "quote_en": "Name the file, describe the symptom and say what 'fixed' looks like up front, and you save a round of corrections."
+        },
+        {
+          "source": "claude-ai-fluency",
+          "section": "효과적인 프롬프팅 기법",
+          "quote": "맥락 제공: 원하는 내용, 그 이유, 관련 배경을 구체적으로 설명한다.",
+          "quote_en": "Provide context: say specifically what you want, why, and the relevant background.",
+          "section_en": "Effective prompting techniques"
+        }
       ],
       "example": {
         "before": "로그인 버그 고쳐줘",
         "after": "세션이 만료된 뒤 로그인이 실패한다는 제보가 있어. src/auth/ 의 토큰 갱신 부분을 보고, 재현하는 실패 테스트를 먼저 쓴 다음 고쳐줘."
+      },
+      "en": {
+        "name": "Specific context",
+        "short": "Context",
+        "summary": "State the goal and point at the file, screen or feature and the symptom from the start.",
+        "example": {
+          "before": "fix the login bug",
+          "after": "users report login fails after the session times out. look at token refresh in src/auth/, write a failing test that reproduces it, then fix it"
+        }
       }
     },
     {
@@ -81,14 +114,43 @@
       "look_for": "States 'done when': a test, build, lint, script, screenshot, repro rerun, or 'keep going until X passes'. Missing when the user ends up being the test suite, discovering breakage themselves turns later.",
       "applies_when": "Any task that produces a change whose correctness can be checked. Not applicable to pure Q&A.",
       "guide": [
-        {"source": "codex-best-practices", "section": "Strong first use / Improve reliability with testing and review", "quote_ko": "완료 조건(Done when)을 적는다: 테스트 통과, 동작 변경, 버그 재현 안 됨 등. Codex는 '좋은 상태'가 뭔지 알아야 스스로 검증 루프를 돈다."},
-        {"source": "claude-best-practices", "section": "Give Claude a check to run", "quote_ko": "통과/실패로 돌아오는 확인 수단을 주면 Claude가 스스로 고치고 다시 돌린다. 없으면 사용자가 테스트 역할을 하게 된다."},
-        {"source": "claude-opus-5-5-guide", "section": "Say what “done” looks like, then let it run", "quote_ko": "한 메시지에 작업 전체와 결승선('테스트 통과', '모든 엔드포인트 이전')을 말하고 맡긴다."},
-        {"source": "openai-get-started-codex", "section": "Overview", "quote_ko": "Codex에게 저장소 맥락과 완료 기준을 주고, 변경을 검증하는 습관을 기른다."}
+        {
+          "source": "codex-best-practices",
+          "section": "Strong first use / Improve reliability with testing and review",
+          "quote": "완료 조건(Done when)을 적는다: 테스트 통과, 동작 변경, 버그 재현 안 됨 등. Codex는 '좋은 상태'가 뭔지 알아야 스스로 검증 루프를 돈다.",
+          "quote_en": "Write 'Done when': tests pass, behavior changes, the bug no longer reproduces. Codex can only run its own check loop if it knows what good looks like."
+        },
+        {
+          "source": "claude-best-practices",
+          "section": "Give Claude a check to run",
+          "quote": "통과/실패로 돌아오는 확인 수단을 주면 Claude가 스스로 고치고 다시 돌린다. 없으면 사용자가 테스트 역할을 하게 된다.",
+          "quote_en": "Give Claude something that comes back pass or fail and it fixes and reruns on its own. Without it, you become the test suite."
+        },
+        {
+          "source": "claude-opus-5-5-guide",
+          "section": "Say what “done” looks like, then let it run",
+          "quote": "한 메시지에 작업 전체와 결승선('테스트 통과', '모든 엔드포인트 이전')을 말하고 맡긴다.",
+          "quote_en": "Hand over the whole task in one message with the finish line ('the tests pass', 'every endpoint is migrated') and let it run."
+        },
+        {
+          "source": "openai-get-started-codex",
+          "section": "Overview",
+          "quote": "Codex에게 저장소 맥락과 완료 기준을 주고, 변경을 검증하는 습관을 기른다.",
+          "quote_en": "Build the habit of giving Codex repository context and completion criteria, and verifying the change."
+        }
       ],
       "example": {
         "before": "결제 모듈 리팩터링해줘",
         "after": "결제 모듈을 리팩터링해줘. 끝나면 pytest tests/payment 를 돌리고, 전부 통과할 때까지 계속 고쳐줘."
+      },
+      "en": {
+        "name": "Done criteria and verification",
+        "short": "Verify",
+        "summary": "Say what has to pass for the work to count as done (tests, build, lint, screenshot) and let the agent run it.",
+        "example": {
+          "before": "refactor the payment module",
+          "after": "refactor the payment module. when you're done run pytest tests/payment and keep fixing until everything passes."
+        }
       }
     },
     {
@@ -99,13 +161,37 @@
       "look_for": "Explicit constraints or preferences: no new libraries, keep API shape, follow pattern X, minimal diff, don't touch folder Y, prefer approach A over B, styles to avoid. Missing when the user later corrects a choice the agent could not have known (e.g. 'no, don't use that library').",
       "applies_when": "Tasks where reasonable alternatives exist or something must stay unchanged.",
       "guide": [
-        {"source": "codex-best-practices", "section": "Strong first use: Context and prompts", "quote_ko": "제약(Constraints): 따라야 할 표준, 구조, 안전 요구, 관례를 적는다."},
-        {"source": "claude-best-practices", "section": "Write a specific prompt", "quote_ko": "두 가지 합리적인 방법 중 선호가 있다면 Claude는 코드에서 그걸 읽을 수 없으니 처음에 말한다."},
-        {"source": "claude-opus-5-5-guide", "section": "For design work, name the styles you don’t want", "quote_ko": "'뻔하지 않게' 같은 막연한 말보다 원하지 않는 패턴을 구체적으로 나열한다."}
+        {
+          "source": "codex-best-practices",
+          "section": "Strong first use: Context and prompts",
+          "quote": "제약(Constraints): 따라야 할 표준, 구조, 안전 요구, 관례를 적는다.",
+          "quote_en": "Constraints: list the standards, architecture, safety requirements and conventions to follow."
+        },
+        {
+          "source": "claude-best-practices",
+          "section": "Write a specific prompt",
+          "quote": "두 가지 합리적인 방법 중 선호가 있다면 Claude는 코드에서 그걸 읽을 수 없으니 처음에 말한다.",
+          "quote_en": "If you prefer one of two reasonable approaches, Claude can't read that from the code, so say it up front."
+        },
+        {
+          "source": "claude-opus-5-5-guide",
+          "section": "For design work, name the styles you don’t want",
+          "quote": "'뻔하지 않게' 같은 막연한 말보다 원하지 않는 패턴을 구체적으로 나열한다.",
+          "quote_en": "Instead of a vague 'make it not generic', list the specific patterns you don't want."
+        }
       ],
       "example": {
         "before": "캘린더 위젯 추가해줘",
         "after": "HotDogWidget.php 패턴을 따라서 월을 고르고 연도를 넘길 수 있는 캘린더 위젯을 만들어줘. 새 라이브러리는 쓰지 마."
+      },
+      "en": {
+        "name": "Constraints and preferences",
+        "short": "Limits",
+        "summary": "Say up front what must not change, what not to use, and which of two approaches you prefer.",
+        "example": {
+          "before": "add a calendar widget",
+          "after": "follow the pattern in HotDogWidget.php and build a calendar widget that lets you pick a month and page between years. no new libraries."
+        }
       }
     },
     {
@@ -116,13 +202,37 @@
       "look_for": "Attaches or pastes the real thing: @file references, screenshots, full error output, logs, links to the exact spec. Missing when the user paraphrases an error ('it shows some error') or retypes numbers from a chart instead of attaching it.",
       "applies_when": "When an error message, file, design, chart, or log existed that the agent needed.",
       "guide": [
-        {"source": "claude-best-practices", "section": "Write a specific prompt", "quote_ko": "필요한 게 이미 있으면 설명하지 말고 건네라: @파일, 스크린샷 붙여넣기, 명령 출력 파이프."},
-        {"source": "claude-opus-5-5-guide", "section": "Share the chart or screenshot itself", "quote_ko": "숫자를 옮겨 적지 말고 차트·도표·스크린샷 자체를 첨부한다."},
-        {"source": "codex-prompting", "section": "Explain a codebase / Prototype from a screenshot", "quote_ko": "@로 파일을 붙이거나 경로를 명시하고, 화면은 스크린샷을 첨부한다."}
+        {
+          "source": "claude-best-practices",
+          "section": "Write a specific prompt",
+          "quote": "필요한 게 이미 있으면 설명하지 말고 건네라: @파일, 스크린샷 붙여넣기, 명령 출력 파이프.",
+          "quote_en": "If you already have what Claude needs, hand it over: @file, paste the screenshot, pipe in the command output."
+        },
+        {
+          "source": "claude-opus-5-5-guide",
+          "section": "Share the chart or screenshot itself",
+          "quote": "숫자를 옮겨 적지 말고 차트·도표·스크린샷 자체를 첨부한다.",
+          "quote_en": "Attach the chart, diagram or screenshot itself instead of retyping the numbers."
+        },
+        {
+          "source": "codex-prompting",
+          "section": "Explain a codebase / Prototype from a screenshot",
+          "quote": "@로 파일을 붙이거나 경로를 명시하고, 화면은 스크린샷을 첨부한다.",
+          "quote_en": "Attach files with @ or name their paths, and attach a screenshot for UI."
+        }
       ],
       "example": {
         "before": "빌드하면 이상한 에러 나는데 고쳐줘",
         "after": "npm run build 하면 아래 에러가 나. 원인 찾아서 고쳐줘.\n```\n(에러 전문 붙여넣기)\n```"
+      },
+      "en": {
+        "name": "Hand over the real material",
+        "short": "Material",
+        "summary": "Attach the file (@path), screenshot or full error output instead of describing it.",
+        "example": {
+          "before": "the build shows some weird error, fix it",
+          "after": "npm run build fails with the error below. find the cause and fix it.\n```\n(paste the full error)\n```"
+        }
       }
     },
     {
@@ -133,13 +243,39 @@
       "look_for": "Signals intended scope and output shape: 'be ambitious / handle empty and error states' or 'minimal, just Y'; the deliverable's format, length, audience (a file, a table, two paragraphs). Missing when the user later asks for obvious follow-ons one by one or reshapes the output format after the fact.",
       "applies_when": "Building features, documents or UI where scope or output shape could reasonably vary.",
       "guide": [
-        {"source": "claude-best-practices", "section": "Write a specific prompt", "quote_ko": "Claude는 요청을 보수적으로 읽고 가장 작게 만든다. 넉넉한 버전을 원하면 'be ambitious'처럼 범위를 말한다."},
-        {"source": "claude-ai-fluency", "section": "설명 자세히 살펴보기", "quote_ko": "결과물 설명: 원하는 결과물, 형식, 대상 독자, 스타일을 명확히 정의한다."},
-        {"source": "claude-101", "section": "더 나은 결과 얻기", "quote_ko": "길이를 추측하게 두지 말고 '두 문단으로', '100단어 이내로'처럼 말한다. 형식은 설명보다 예시로 보여 준다."}
+        {
+          "source": "claude-best-practices",
+          "section": "Write a specific prompt",
+          "quote": "Claude는 요청을 보수적으로 읽고 가장 작게 만든다. 넉넉한 버전을 원하면 'be ambitious'처럼 범위를 말한다.",
+          "quote_en": "Claude reads requests conservatively and builds the smallest thing. If you want the fuller version, say so ('be ambitious')."
+        },
+        {
+          "source": "claude-ai-fluency",
+          "section": "설명 자세히 살펴보기",
+          "quote": "결과물 설명: 원하는 결과물, 형식, 대상 독자, 스타일을 명확히 정의한다.",
+          "quote_en": "Product description: define the output, its format, audience and style.",
+          "section_en": "A closer look at description"
+        },
+        {
+          "source": "claude-101",
+          "section": "더 나은 결과 얻기",
+          "quote": "길이를 추측하게 두지 말고 '두 문단으로', '100단어 이내로'처럼 말한다. 형식은 설명보다 예시로 보여 준다.",
+          "quote_en": "Don't make it guess the length: say 'two paragraphs' or 'under 100 words'. Show the format with an example rather than describing it.",
+          "section_en": "Getting better results"
+        }
       ],
       "example": {
         "before": "목업 보고 설정 페이지 만들어줘",
         "after": "목업 보고 설정 페이지 만들어줘. 넉넉하게: 빈 상태·에러 상태, 저장 흐름 연결, 키보드 이동까지. 레이아웃만 말고."
+      },
+      "en": {
+        "name": "Scope and output shape",
+        "short": "Scope",
+        "summary": "Say whether you want the minimal or the fuller version, and what shape the result should take (file, table, length).",
+        "example": {
+          "before": "build the settings page from the mockup",
+          "after": "build the settings page from the mockup. be ambitious: empty and error states, the save flow wired up, keyboard navigation, not just the layout"
+        }
       }
     },
     {
@@ -150,14 +286,45 @@
       "look_for": "For large or fuzzy tasks: asks for a plan before edits, uses /plan or plan mode, asks the agent to interview them and write a spec, or splits into milestones. Missing when a big ambiguous request was fired off directly and then reshaped through many corrections.",
       "applies_when": "Multi-step, multi-file, or still-ambiguous work. Not applicable to small well-defined edits.",
       "guide": [
-        {"source": "codex-best-practices", "section": "Plan first for difficult tasks", "quote_ko": "복잡하거나 모호한 작업은 코딩 전에 계획부터: Plan 모드(/plan), 나를 인터뷰하게 하기, PLANS.md 템플릿."},
-        {"source": "claude-code-in-action", "section": "긴 세션 조율하기", "quote_ko": "코드 한 줄 쓰기 전에 플랜 모드로 범위를 정하고, 받은 계획은 훑지 말고 실제로 읽고 다듬는다."},
-        {"source": "claude-code-101", "section": "탐색 → 계획 → 코드 작성 → 커밋 워크플로우", "quote_ko": "작업을 쪼개고, Claude가 접근 방식을 제안하게 한 뒤 검토하고 진행한다."},
-        {"source": "claude-best-practices", "section": "Brainstorm with Claude first", "quote_ko": "원하는 게 아직 불분명하면 Claude에게 인터뷰를 시켜 스펙을 쓰게 하고, 새 세션에서 그 스펙으로 만든다."}
+        {
+          "source": "codex-best-practices",
+          "section": "Plan first for difficult tasks",
+          "quote": "복잡하거나 모호한 작업은 코딩 전에 계획부터: Plan 모드(/plan), 나를 인터뷰하게 하기, PLANS.md 템플릿.",
+          "quote_en": "For complex or ambiguous tasks, plan before coding: Plan mode (/plan), ask it to interview you, or a PLANS.md template."
+        },
+        {
+          "source": "claude-code-in-action",
+          "section": "긴 세션 조율하기",
+          "quote": "코드 한 줄 쓰기 전에 플랜 모드로 범위를 정하고, 받은 계획은 훑지 말고 실제로 읽고 다듬는다.",
+          "quote_en": "Scope the work in plan mode before a single line is written, then actually read the plan and refine it.",
+          "section_en": "Steering long sessions"
+        },
+        {
+          "source": "claude-code-101",
+          "section": "탐색 → 계획 → 코드 작성 → 커밋 워크플로우",
+          "quote": "작업을 쪼개고, Claude가 접근 방식을 제안하게 한 뒤 검토하고 진행한다.",
+          "quote_en": "Break the work down, let Claude propose an approach, review it, then proceed.",
+          "section_en": "The explore → plan → code → commit workflow"
+        },
+        {
+          "source": "claude-best-practices",
+          "section": "Brainstorm with Claude first",
+          "quote": "원하는 게 아직 불분명하면 Claude에게 인터뷰를 시켜 스펙을 쓰게 하고, 새 세션에서 그 스펙으로 만든다.",
+          "quote_en": "If you don't know what you want yet, have Claude interview you and write a spec, then build from it in a fresh session."
+        }
       ],
       "example": {
         "before": "공개 API에 rate limit 붙여줘",
         "after": "공개 API에 rate limit을 붙이고 싶은데 아직 정리를 못 했어. 스펙을 쓸 수 있을 때까지 나한테 질문하고, 다 되면 SPEC.md 로 써줘."
+      },
+      "en": {
+        "name": "Plan or interview first",
+        "short": "Plan",
+        "summary": "For big or still-fuzzy work, have the agent plan or interview you before it builds.",
+        "example": {
+          "before": "add rate limiting to the public API",
+          "after": "I want to add rate limiting to the public API but haven't thought it through. interview me until you could write the spec, then write it to SPEC.md."
+        }
       }
     },
     {
@@ -168,13 +335,38 @@
       "look_for": "Tells the agent when to keep going vs. stop and ask (e.g. 'ask only if a test fails for a reason you can't explain', 'confirm before submitting/deleting/paying'), and how to behave or report (concise vs detailed, keep a checklist file, end with what's blocked on me). Missing when the agent kept stopping to ask permission, or went past a point the user wanted to approve, or the user had to say 'continue' repeatedly.",
       "applies_when": "Longer or autonomous tasks, and any task with irreversible or outward-facing steps (submit, send, delete, pay, publish).",
       "guide": [
-        {"source": "claude-opus-5-5-guide", "section": "Tell it which stops you want", "quote_ko": "언제 멈추고 물어볼지, 언제 계속할지를 짧은 규칙으로 정한다. 되돌리기 어려운 작업 앞에서는 반드시 멈추게 한다."},
-        {"source": "claude-ai-fluency", "section": "설명 자세히 살펴보기", "quote_ko": "수행 설명: 간결할지 상세할지, 도전적일지 조력할지 등 협업 중 AI가 어떻게 수행하길 원하는지 정한다."},
-        {"source": "openai-agents-workflows", "section": "Overview", "quote_ko": "에이전트와 일할 때는 맥락을 주고, 결과물을 정의하고, 경계(boundaries)를 정한다."}
+        {
+          "source": "claude-opus-5-5-guide",
+          "section": "Tell it which stops you want",
+          "quote": "언제 멈추고 물어볼지, 언제 계속할지를 짧은 규칙으로 정한다. 되돌리기 어려운 작업 앞에서는 반드시 멈추게 한다.",
+          "quote_en": "Write a short rule for when to stop and ask and when to keep going. Always stop before anything hard to undo."
+        },
+        {
+          "source": "claude-ai-fluency",
+          "section": "설명 자세히 살펴보기",
+          "quote": "수행 설명: 간결할지 상세할지, 도전적일지 조력할지 등 협업 중 AI가 어떻게 수행하길 원하는지 정한다.",
+          "quote_en": "Performance description: say how you want the AI to behave while you work together, concise or detailed, challenging or supportive.",
+          "section_en": "A closer look at description"
+        },
+        {
+          "source": "openai-agents-workflows",
+          "section": "Overview",
+          "quote": "에이전트와 일할 때는 맥락을 주고, 결과물을 정의하고, 경계(boundaries)를 정한다.",
+          "quote_en": "When working with agents, give context, define the output, and set boundaries."
+        }
       ],
       "example": {
         "before": "사람인이랑 원티드로 자동 지원 시스템 만들어줘",
         "after": "사람인·원티드 자동 지원 시스템을 만들어줘. 공고 수집과 지원서 작성까지는 묻지 말고 진행하고, 최종 제출 직전에는 입력값을 표로 보여주고 멈춰. 진행 상황은 TASKS.md 체크리스트로 남겨."
+      },
+      "en": {
+        "name": "Stop points and working style",
+        "short": "Stops",
+        "summary": "Say how far the agent should go on its own, where it must stop and ask, and how it should work and report.",
+        "example": {
+          "before": "build an auto-apply system for the job sites",
+          "after": "build the auto-apply system for the two job sites. collect postings and fill in applications without asking, but stop right before the final submit and show me the values in a table. keep progress in a TASKS.md checklist."
+        }
       }
     },
     {
@@ -185,14 +377,44 @@
       "look_for": "Asks for proof: the command run and its output, screenshots, the diff, links; asks the agent to mark what it couldn't confirm; or asks for an independent review (fresh session/subagent, /review, /code-review). Score 2 if the user asked for evidence or verified; 0 if they accepted an unverified claim that turned out wrong.",
       "applies_when": "When the agent reported completion of something checkable, especially after unattended runs.",
       "guide": [
-        {"source": "claude-code-in-action", "section": "신뢰하기: 감독 없는 실행 검증하기", "quote_ko": "덜 지켜볼수록 더 검증한다. 요약이 아니라 diff부터 읽고, 코드 작성 과정을 모르는 새 세션에 두 번째 의견을 구한다."},
-        {"source": "claude-best-practices", "section": "Give Claude a check to run", "quote_ko": "어떤 방식이든 증거를 요구하라: 실행한 명령과 출력, 또는 스크린샷. '테스트 다 통과'만으로는 알 수 있는 게 거의 없다."},
-        {"source": "claude-opus-5-5-guide", "section": "Ask it to mark what it couldn’t confirm", "quote_ko": "확인하지 못한 것은 표시하고 어디를 찾아봤는지 말하게 한다."},
-        {"source": "codex-best-practices", "section": "Improve reliability with testing and review", "quote_ko": "변경을 요청하는 데서 멈추지 말고 테스트·검사를 돌려 결과를 확인하고, /review 로 diff를 검토한 뒤 받아들인다."}
+        {
+          "source": "claude-code-in-action",
+          "section": "신뢰하기: 감독 없는 실행 검증하기",
+          "quote": "덜 지켜볼수록 더 검증한다. 요약이 아니라 diff부터 읽고, 코드 작성 과정을 모르는 새 세션에 두 번째 의견을 구한다.",
+          "quote_en": "The less you watched, the more you verify. Start from the diff, not the summary, and get a second opinion from a fresh session.",
+          "section_en": "Trust it: verifying unsupervised runs"
+        },
+        {
+          "source": "claude-best-practices",
+          "section": "Give Claude a check to run",
+          "quote": "어떤 방식이든 증거를 요구하라: 실행한 명령과 출력, 또는 스크린샷. '테스트 다 통과'만으로는 알 수 있는 게 거의 없다.",
+          "quote_en": "Whichever way you check, ask for evidence: the command and its output, or a screenshot. 'All tests pass' alone tells you very little."
+        },
+        {
+          "source": "claude-opus-5-5-guide",
+          "section": "Ask it to mark what it couldn’t confirm",
+          "quote": "확인하지 못한 것은 표시하고 어디를 찾아봤는지 말하게 한다.",
+          "quote_en": "Ask it to mark anything it couldn't confirm, and to say where it looked."
+        },
+        {
+          "source": "codex-best-practices",
+          "section": "Improve reliability with testing and review",
+          "quote": "변경을 요청하는 데서 멈추지 말고 테스트·검사를 돌려 결과를 확인하고, /review 로 diff를 검토한 뒤 받아들인다.",
+          "quote_en": "Don't stop at asking for a change: run the checks, confirm the result, and review the diff with /review before accepting it."
+        }
       ],
       "example": {
         "before": "다 고쳤으면 알려줘",
         "after": "고친 다음 테스트를 실제로 돌리고, 실행한 명령과 출력 마지막 20줄, 바뀐 파일 목록을 같이 보여줘. 확인 못 한 건 따로 표시해."
+      },
+      "en": {
+        "name": "Ask for evidence, review the result",
+        "short": "Evidence",
+        "summary": "Don't take 'done' at face value: ask for the command and its output, the diff, or a screenshot.",
+        "example": {
+          "before": "let me know when it's fixed",
+          "after": "after the fix, actually run the tests and show me the command, the last 20 lines of output and the list of changed files. mark anything you couldn't confirm."
+        }
       }
     },
     {
@@ -203,14 +425,45 @@
       "look_for": "Healthy: stops drift early, gives one clear and specific correction, uses rewind, or after two failed corrections starts fresh (/clear, new session) with a better prompt folding in what was learned. Also tells the agent about manual edits/reverts. Unhealthy: three or more rounds of vague 'no, still wrong / again' in the same thread.",
       "applies_when": "Sessions with at least one correction from the user.",
       "guide": [
-        {"source": "claude-best-practices", "section": "Steer the session", "quote_ko": "처음 1분을 지켜보다 엇나가면 바로 Esc. 두 번 교정해도 안 되면 세 번째 대신 /clear 후 더 나은 프롬프트를 쓴다."},
-        {"source": "claude-code-in-action", "section": "긴 세션 조율하기", "quote_ko": "잘못된 방향이면 프롬프트로 되돌리려 하지 말고 rewind로 체크포인트로 돌아간다."},
-        {"source": "claude-101", "section": "더 나은 결과 얻기", "quote_ko": "'더 짧게'보다 '처음 두 단락을 자르고 결론을 행동 중심으로'처럼 구체적으로 피드백하고, 엇나간 대화는 새 채팅이 더 빠를 수 있다."},
-        {"source": "codex-prompting", "section": "Iterate on UI with live updates", "quote_ko": "직접 되돌린 부분이 있으면 Codex에게 알려서 덮어쓰지 않게 한다."}
+        {
+          "source": "claude-best-practices",
+          "section": "Steer the session",
+          "quote": "처음 1분을 지켜보다 엇나가면 바로 Esc. 두 번 교정해도 안 되면 세 번째 대신 /clear 후 더 나은 프롬프트를 쓴다.",
+          "quote_en": "Watch the first minute and press Esc the moment it drifts. After two failed corrections, /clear and write a better prompt instead of a third."
+        },
+        {
+          "source": "claude-code-in-action",
+          "section": "긴 세션 조율하기",
+          "quote": "잘못된 방향이면 프롬프트로 되돌리려 하지 말고 rewind로 체크포인트로 돌아간다.",
+          "quote_en": "If it's heading the wrong way, rewind to a checkpoint instead of steering it back with prompts.",
+          "section_en": "Steering long sessions"
+        },
+        {
+          "source": "claude-101",
+          "section": "더 나은 결과 얻기",
+          "quote": "'더 짧게'보다 '처음 두 단락을 자르고 결론을 행동 중심으로'처럼 구체적으로 피드백하고, 엇나간 대화는 새 채팅이 더 빠를 수 있다.",
+          "quote_en": "Give specific feedback ('cut the first two paragraphs and make the conclusion action-oriented' beats 'shorter'); a derailed chat is often faster to restart.",
+          "section_en": "Getting better results"
+        },
+        {
+          "source": "codex-prompting",
+          "section": "Iterate on UI with live updates",
+          "quote": "직접 되돌린 부분이 있으면 Codex에게 알려서 덮어쓰지 않게 한다.",
+          "quote_en": "If you reverted something by hand, tell Codex so it doesn't overwrite your edits."
+        }
       ],
       "example": {
         "before": "아니 그게 아니라 다시 해봐 (세 번째)",
         "after": "(/clear 후) 버튼 정렬을 고쳐줘. 앞서 시도한 flex 방식은 Safari에서 깨졌으니 grid로 해줘. 기준은 첨부한 스크린샷이야."
+      },
+      "en": {
+        "name": "Course correction",
+        "short": "Steer",
+        "summary": "Stop drift early, and if the same correction fails twice, start fresh with a better prompt.",
+        "example": {
+          "before": "no that's not it, try again (third time)",
+          "after": "(after /clear) fix the button alignment. the flex approach broke in Safari, so use grid. the target is the attached screenshot."
+        }
       }
     },
     {
@@ -221,13 +474,37 @@
       "look_for": "When the user states a durable rule ('always', 'from now on', 'every time', '무조건', '앞으로') or repeats the same instruction/correction, do they get it recorded where future sessions load it (CLAUDE.md, AGENTS.md, memory, a skill, a hook)? Score 2 if they ask to record it or it was clearly already recorded; 1 if stated once without recording; 0 if they repeat the same rule or correction several times in the session.",
       "applies_when": "Only when the user states or repeats a rule meant to outlive the current task.",
       "guide": [
-        {"source": "codex-best-practices", "section": "Make guidance reusable with AGENTS.md / Common mistakes", "quote_ko": "통하는 프롬프트 패턴은 손으로 되풀이하지 말고 AGENTS.md로 옮긴다. 같은 실수를 두 번 하면 회고를 시켜 AGENTS.md를 고친다."},
-        {"source": "claude-best-practices", "section": "Keep CLAUDE.md short / Enforce the rules that can't have exceptions", "quote_ko": "Claude가 코드로 알 수 없는 것만 CLAUDE.md에 적고, 예외가 없어야 하는 규칙은 훅으로 강제한다."},
-        {"source": "openai-extend-codex", "section": "Overview", "quote_ko": "효과 있는 개인 습관을 공유 지침과 재사용 스킬로 만들어 팀 관행으로 바꾼다."}
+        {
+          "source": "codex-best-practices",
+          "section": "Make guidance reusable with AGENTS.md / Common mistakes",
+          "quote": "통하는 프롬프트 패턴은 손으로 되풀이하지 말고 AGENTS.md로 옮긴다. 같은 실수를 두 번 하면 회고를 시켜 AGENTS.md를 고친다.",
+          "quote_en": "Once a prompting pattern works, stop repeating it by hand and move it into AGENTS.md. When Codex makes the same mistake twice, ask for a retrospective and update AGENTS.md."
+        },
+        {
+          "source": "claude-best-practices",
+          "section": "Keep CLAUDE.md short / Enforce the rules that can't have exceptions",
+          "quote": "Claude가 코드로 알 수 없는 것만 CLAUDE.md에 적고, 예외가 없어야 하는 규칙은 훅으로 강제한다.",
+          "quote_en": "Only put in CLAUDE.md what Claude can't learn from the code, and enforce rules that can't have exceptions with hooks."
+        },
+        {
+          "source": "openai-extend-codex",
+          "section": "Overview",
+          "quote": "효과 있는 개인 습관을 공유 지침과 재사용 스킬로 만들어 팀 관행으로 바꾼다.",
+          "quote_en": "Turn effective personal habits into shared guidance and reusable skills the team can follow."
+        }
       ],
       "example": {
         "before": "아 그리고 탐사는 무조건 x1로 돌아야한다 (세 번째 대화에서 또)",
         "after": "탐사는 무조건 x1이야. 이 규칙을 CLAUDE.md 금지 사항에 추가하고, 다음부터는 묻지 말고 지켜."
+      },
+      "en": {
+        "name": "Move repeated rules into files",
+        "short": "Rules",
+        "summary": "Rules and procedures you keep repeating belong in CLAUDE.md, AGENTS.md or a skill so later sessions follow them too.",
+        "example": {
+          "before": "remember, always run the import with --dry-run first (said again in a third session)",
+          "after": "always run the import with --dry-run first. add this rule to CLAUDE.md and follow it from now on without asking."
+        }
       }
     },
     {
@@ -238,14 +515,47 @@
       "look_for": "One chat per coherent outcome: when the user switches to an unrelated task, do they start a new session, /clear, fork, or hand off? For long chats, do they compact with a focus? Score 0 when one session piles up several unrelated projects; 1 when related but sprawling without any compaction or reset; 2 when the session stays on one outcome or the user resets at topic changes.",
       "applies_when": "Sessions long enough to drift (roughly 15+ user turns) or containing a clear topic switch.",
       "guide": [
-        {"source": "codex-best-practices", "section": "Organize long-running chats / Common mistakes", "quote_ko": "결과 하나에 대화 하나. 프로젝트 전체를 한 대화로 끌고 가면 컨텍스트가 부풀고 결과가 나빠진다."},
-        {"source": "claude-code-101", "section": "컨텍스트 관리", "quote_ko": "/compact, /clear, /context로 컨텍스트 창을 관리해 긴 세션의 생산성을 유지한다."},
-        {"source": "claude-code-in-action", "section": "긴 세션 조율하기", "quote_ko": "/compact는 단독으로 쓰지 말고 무엇을 남길지 지시를 붙인다."}
+        {
+          "source": "codex-best-practices",
+          "section": "Organize long-running chats / Common mistakes",
+          "quote": "결과 하나에 대화 하나. 프로젝트 전체를 한 대화로 끌고 가면 컨텍스트가 부풀고 결과가 나빠진다.",
+          "quote_en": "One chat per coherent outcome. Running a whole project in one chat bloats the context and makes results worse over time."
+        },
+        {
+          "source": "claude-code-101",
+          "section": "컨텍스트 관리",
+          "quote": "/compact, /clear, /context로 컨텍스트 창을 관리해 긴 세션의 생산성을 유지한다.",
+          "quote_en": "Manage the context window with /compact, /clear and /context to keep long sessions productive.",
+          "section_en": "Context management"
+        },
+        {
+          "source": "claude-code-in-action",
+          "section": "긴 세션 조율하기",
+          "quote": "/compact는 단독으로 쓰지 말고 무엇을 남길지 지시를 붙인다.",
+          "quote_en": "Don't run /compact bare; tell it what the summary must keep.",
+          "section_en": "Steering long sessions"
+        }
       ],
       "example": {
         "before": "(오사카 일정 대화에 이어서) 이제 경력증명서 양식 만들어줘",
         "after": "(새 세션에서) 경력증명서 Word 양식을 만들어줘. 회사·근무기간·담당업무는 아래와 같아."
+      },
+      "en": {
+        "name": "One outcome per conversation",
+        "short": "Focus",
+        "summary": "Don't keep stacking unrelated work onto one conversation; split or tidy it per outcome.",
+        "example": {
+          "before": "(continuing the travel-planning chat) now make me an employment certificate template",
+          "after": "(in a new session) make an employment certificate Word template. company, dates and role are below."
+        }
       }
     }
-  ]
+  ],
+  "title_en": "Default rubric grounded in Claude and OpenAI official guides and academies",
+  "scale_en": {
+    "0": "Missed: what the guide recommends is absent",
+    "1": "Partial: only some of it, or only after a correction",
+    "2": "Good: done as the guide says from the start",
+    "null": "N/A: this conversation didn't need it"
+  }
 }

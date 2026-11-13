@@ -108,7 +108,7 @@ def output_schema(rubric: dict) -> dict:
 def build_prompt(s: Session, rubric: dict, lang: str = "ko") -> str:
     dims = []
     for d in rubric["dimensions"]:
-        guide = " / ".join(f'{g["section"]}: {g["quote_ko"]}' for g in d["guide"])
+        guide = " / ".join(f'{g["section"]}: {g["quote"]}' for g in d["guide"])
         dims.append(
             f'- id: {d["id"]} ({d["name"]})\n  what good looks like: {d["summary"]}\n'
             f'  look for: {d["look_for"]}\n  applies when: {d["applies_when"]}\n  guide: {guide}'
@@ -134,7 +134,7 @@ If nothing is worth coaching, return an empty list.
 task_summary = one short line in {out_lang} describing what the session was about.
 
 misses = moments where the user did NOT get what they wanted from a turn (at most 8, most costly first).
-Long conversations build context, so a short instruction like "응 해줘" is fine when context already made
+Long conversations build context, so a short instruction like "ok do it" / "응 해줘" is fine when context already made
 the intent clear; never treat brevity alone as a miss. Evidence comes from what happened next: the user
 corrected the result, repeated an earlier instruction, asked to redo/undo, reported damage or an unwanted
 action, showed frustration, or the agent had to ask back for missing info.
@@ -151,7 +151,7 @@ action, showed frustration, or the agent had to ask back for missing info.
   (keep it short; don't restate what context already covered). Empty string for other causes.
 - why: one sentence in {out_lang}: for prompt_gap the single missing piece; otherwise why it was not the
   user's prompt problem.
-Never copy personal identifiers (names, addresses, ID/phone/card numbers) into any field; write <주소>, <이름>.
+Never copy personal identifiers (names, addresses, ID/phone/card numbers) into any field; write <address>, <name>.
 
 Rubric:
 {chr(10).join(dims)}
@@ -298,7 +298,7 @@ GAP_SCHEMA = {
 def summarize_gaps(gaps: list[dict], backend: str, model: str | None, lang: str = "ko") -> list[dict]:
     """Group prompt gaps that recur across conversations and propose one durable rule per group.
 
-    A gap that keeps coming back ("use ego-browser", "affiliation is 개인") shouldn't be fixed by typing it
+    A gap that keeps coming back ("always use browser X", "affiliation is 'individual'") shouldn't be fixed by typing it
     again every time; it belongs in CLAUDE.md/AGENTS.md, memory, a skill or a hook.
     """
     if len(gaps) < 2:

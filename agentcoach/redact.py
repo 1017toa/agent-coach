@@ -18,12 +18,12 @@ _PATTERNS = [
     (re.compile(r"xox[baprs]-[A-Za-z0-9\-]{10,}"), "[SLACK_TOKEN]"),
     (re.compile(r"eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"), "[JWT]"),
     (re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}"), "[EMAIL]"),
-    (re.compile(r"\b\d{6}[- ]?[1-4]\d{6}\b"), "[주민번호]"),
-    (re.compile(r"\b(?:\d{4}[- ]){3}\d{4}\b"), "[카드번호]"),
-    (re.compile(r"01[016789][-. ]?\d{3,4}[-. ]?\d{4}"), "[전화번호]"),
+    (re.compile(r"\b\d{6}[- ]?[1-4]\d{6}\b"), "[ID_NUMBER]"),
+    (re.compile(r"\b(?:\d{4}[- ]){3}\d{4}\b"), "[CARD_NUMBER]"),
+    (re.compile(r"01[016789][-. ]?\d{3,4}[-. ]?\d{4}"), "[PHONE]"),
     # Korean road-name address, optionally followed by building/unit ("행복로 12, 101동 202호")
-    (re.compile(r"[가-힣0-9]{1,20}(?:로|길)\s?\d{1,4}(?:-\d{1,4})?(?![0-9가-힣])(?:\s*,?\s*\d{1,4}동)?(?:\s*\d{1,5}호)?"), "[주소]"),
-    (re.compile(r"\b\d{1,4}동\s?\d{1,5}호\b"), "[주소]"),
+    (re.compile(r"[가-힣0-9]{1,20}(?:로|길)\s?\d{1,4}(?:-\d{1,4})?(?![0-9가-힣])(?:\s*,?\s*\d{1,4}동)?(?:\s*\d{1,5}호)?"), "[ADDRESS]"),
+    (re.compile(r"\b\d{1,4}동\s?\d{1,5}호\b"), "[ADDRESS]"),
     (re.compile(r"(?i)(password|passwd|pwd|secret|token|api[_-]?key|비밀번호|비번)\s*[:=]\s*\S+"), r"\1=[REDACTED]"),
 ]
 
@@ -46,7 +46,7 @@ def redact(text: str) -> str:
     if not text:
         return text
     for term in _custom_terms():
-        text = re.sub(re.escape(term), "[개인정보]", text, flags=re.I)
+        text = re.sub(re.escape(term), "[PRIVATE]", text, flags=re.I)
     for rx, repl in _PATTERNS:
         text = rx.sub(repl, text)
     return text

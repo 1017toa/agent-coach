@@ -109,6 +109,30 @@ class Scoring(unittest.TestCase):
         self.assertIn("멈출 지점", html_out)
 
 
+class English(unittest.TestCase):
+    def test_rubric_and_report_in_english(self):
+        import re as _re
+        from agentcoach.report import render
+        rubric = load_rubric(lang="en")
+        self.assertEqual(rubric["dimensions"][0]["name"], "Specific context")
+        self.assertTrue(all(g["quote"] and not _re.search(r"[가-힣]", g["quote"] + g["section"])
+                            for d in rubric["dimensions"] for g in d["guide"]))
+        run = {"created": "2026-11-01T00:00:00+00:00", "overall": 50, "judge": "x", "session_count": 0,
+               "sources": [], "sessions": [], "rubric": {"version": 2}, "dimensions": {}}
+        html_out = render([run], rubric)
+        self.assertIn('lang="en"', html_out)
+        self.assertNotIn("{{", html_out)
+        ui = html_out.split('<script id="data"')[0] + html_out.split("</script>", 1)[1]
+        self.assertIsNone(_re.search(r"[가-힣]", ui))
+
+    def test_cli_messages(self):
+        from agentcoach.i18n import M, t
+        for k, v in M.items():
+            self.assertIn("en", v, k)
+            self.assertIn("ko", v, k)
+        self.assertIn("conversations", t("scan_head", "en", since="x", n=3))
+
+
 class Misses(unittest.TestCase):
     def test_clean_and_summary(self):
         from agentcoach.judge import _clean
