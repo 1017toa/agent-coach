@@ -16,7 +16,7 @@ Use the first that works (check with `--version`):
 
 1. `agent-coach` on PATH (installed with pip, pipx or uv).
 2. `uvx agent-coach` or `pipx run agent-coach`, if `uv` or `pipx` exists.
-3. From this plugin's own files, no install needed. The plugin root holds the `agentcoach` package; it is `${CLAUDE_PLUGIN_ROOT}`, or, if that placeholder was not filled in, the directory two levels above this SKILL.md. Run `python -m agentcoach` (or `python3`, `py -3` on Windows) with `PYTHONPATH` set to the plugin root, e.g. `PYTHONPATH="<plugin root>" python3 -m agentcoach --version`. Needs Python 3.9+, no other dependencies.
+3. From this plugin's own files, no install needed. The plugin root holds the `agentcoach` package; it is `${CLAUDE_PLUGIN_ROOT}`, or, if that placeholder was not filled in, the directory two levels above this SKILL.md. Run `python -m agentcoach` (or `python3`, `py -3` on Windows) with `PYTHONPATH` set to the plugin root, e.g. `PYTHONPATH="<plugin root>" python3 -m agentcoach --version`. Needs Python 3.10+, no other dependencies.
 
 Below, `agent-coach` means whichever form worked.
 

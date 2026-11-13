@@ -31,7 +31,7 @@ No install is needed; `python -m agentcoach` runs from the checkout.
 ## Guidelines
 
 - **Never put real personal data in code, tests, fixtures or screenshots.** Use made-up names, addresses and numbers (e.g. `Happy-ro 12`, `010-0000-0000`). Run the demo script for screenshots instead of your own report.
-- Keep the package dependency-free (standard library only, Python 3.9+).
+- Keep the package dependency-free (standard library only, Python 3.10+).
 - Any new user-facing string needs both `en` and `ko` (the tests check this).
 - Rubric changes should cite an official Anthropic or OpenAI source, and bump `version` in `default.json`.
 - Add a test for parser changes; transcript formats change often.

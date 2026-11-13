@@ -7,7 +7,7 @@ name = "agent-coach"
 version = "0.1.0"
 description = "Grade and coach your Claude Code and Codex prompts from your own conversation history, against Anthropic's and OpenAI's official guides."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = []
 license = "MIT"
 license-files = ["LICENSE"]

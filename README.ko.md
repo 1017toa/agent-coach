@@ -6,7 +6,7 @@
 
 <p>
   <a href="https://github.com/1017toa/agent-coach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT 라이선스"></a>
-  <img src="https://img.shields.io/badge/python-3.9%2B-3776AB.svg?logo=python&logoColor=white" alt="Python 3.9 이상">
+  <img src="https://img.shields.io/badge/python-3.10%2B-3776AB.svg?logo=python&logoColor=white" alt="Python 3.10 이상">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen.svg" alt="의존성 없음">
   <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-8A63D2.svg" alt="Claude Code, Codex 지원">
   <img src="https://img.shields.io/badge/runs-100%25%20local-555.svg" alt="로컬 실행">

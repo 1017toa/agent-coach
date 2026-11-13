@@ -9,7 +9,7 @@ What it does:
 - Groups recurring prompt gaps into one-line rules and says where to put them (CLAUDE.md / AGENTS.md, memory, skill, hook).
 - Saves every run to ~/.agent-coach/history so progress can be tracked over time.
 - Grades through the user's signed-in `claude` or `codex` CLI (no API key), or offline with keyword heuristics.
-- Masks secrets and contact details before sending anything to the judge. Zero dependencies, Python 3.9+, MIT license. English and Korean.
+- Masks secrets and contact details before sending anything to the judge. Zero dependencies, Python 3.10+, MIT license. English and Korean.
 
 Install and run:
 pipx install agent-coach   (or uv tool install agent-coach, pip install agent-coach)

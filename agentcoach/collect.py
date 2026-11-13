@@ -221,7 +221,7 @@ def parse_codex_file(path: str, include_sdk: bool = False) -> Session | None:
             if t == "session_meta":
                 sid = p.get("id") or sid
                 cwd = p.get("cwd") or ""
-                project = Path(cwd).name if cwd else ""
+                project = re.split(r"[\\/]", cwd.rstrip("\\/"))[-1] if cwd else ""  # cwd may be a Windows path
                 # `codex exec`, or another program driving Codex through the app-server
                 # (default originator "codex_cli_rs"); the TUI/IDE set their own originator
                 scripted = p.get("source") == "exec" or p.get("originator") == "codex_cli_rs" \

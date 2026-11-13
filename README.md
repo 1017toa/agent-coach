@@ -6,7 +6,7 @@
 
 <p>
   <a href="https://github.com/1017toa/agent-coach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/python-3.9%2B-3776AB.svg?logo=python&logoColor=white" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/python-3.10%2B-3776AB.svg?logo=python&logoColor=white" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen.svg" alt="Zero dependencies">
   <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-8A63D2.svg" alt="Works with Claude Code and Codex">
   <img src="https://img.shields.io/badge/runs-100%25%20local-555.svg" alt="Runs locally">
