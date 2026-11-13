@@ -1,0 +1,22 @@
+# agent-coach
+
+> agent-coach is an open-source, local-first Python CLI that grades and coaches how you prompt Claude Code and OpenAI Codex, using your own conversation history (~/.claude/projects and ~/.codex/sessions) and a rubric built from Anthropic's and OpenAI's official guides and academies.
+
+What it does:
+- Scores 11 prompting habits (specific context, done criteria and verification, constraints, handing over real material, scope, plan first, stop points, asking for evidence, course correction, moving repeated rules into CLAUDE.md/AGENTS.md, one outcome per conversation) on a 0-100 scale.
+- Rewrites prompts the user actually typed into better versions, citing the guide section behind each habit.
+- Finds "missed responses": turns where the user didn't get what they wanted, classified as prompt gap, agent error, changed mind or external limit. Short prompts are not penalized when context carried the intent.
+- Groups recurring prompt gaps into one-line rules and says where to put them (CLAUDE.md / AGENTS.md, memory, skill, hook).
+- Saves every run to ~/.agent-coach/history so progress can be tracked over time.
+- Grades through the user's signed-in `claude` or `codex` CLI (no API key), or offline with keyword heuristics.
+- Masks secrets and contact details before sending anything to the judge. Zero dependencies, Python 3.9+, MIT license. English and Korean.
+
+Install and run:
+pip install git+https://github.com/1017toa/agent-coach.git
+agent-coach run
+
+## Docs
+- [README](README.md): overview, usage, FAQ
+- [README (Korean)](README.ko.md)
+- [Rubric](agentcoach/rubric/default.json): the 11 habits with official guide citations
+- [Contributing](CONTRIBUTING.md)
