@@ -196,9 +196,9 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 
 기본 채점표(v3)는 다음 자료로 만들었습니다.
 
-- **Anthropic**: [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices), [모델 설정](https://code.claude.com/docs/en/model-config), [Opus 5.5 활용 가이드](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
+- **Anthropic**: [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices), [모델 설정](https://code.claude.com/docs/en/model-config), [Claude Fable 5.2 프롬프트 가이드](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Opus 5.5 활용 가이드](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
 - **Claude 아카데미**: [AI Fluency: Framework & Foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/courses/claude-code-101), [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/courses/claude-101)
-- **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting)
+- **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting), [GPT-5.6 프롬프트 가이드](https://developers.openai.com/api/docs/guides/prompt-guidance-gpt-5p6)
 - **OpenAI 아카데미**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (무료, 로그인 필요. 채점표는 네 칸 작업 지시, Plan 모드, 검증과 인계, 위임 계약, AGENTS.md 같은 구체적인 레슨을 근거로 씀)
 
 채점표가 바뀌면 이전 회차에는 새 항목 점수가 없고, 리포트에 버전이 다르다고 표시됩니다.

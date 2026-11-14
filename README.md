@@ -196,9 +196,9 @@ Not yet; Claude Code and Codex only. Support for more tools is on the roadmap, a
 
 The default rubric (v3) is built from:
 
-- **Anthropic**: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Model configuration](https://code.claude.com/docs/en/model-config), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
+- **Anthropic**: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Model configuration](https://code.claude.com/docs/en/model-config), [Prompting Claude Fable 5.2](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
 - **Claude Academy**: [AI Fluency: Framework & Foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/courses/claude-code-101), [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/courses/claude-101)
-- **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting)
+- **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting), [GPT-5.6 prompt guidance](https://developers.openai.com/api/docs/guides/prompt-guidance-gpt-5p6)
 - **OpenAI Academy**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (free with sign-in; the rubric cites specific lessons, such as the four-part task brief, Plan Mode, validation and handoff, delegation contracts and AGENTS.md)
 
 When the rubric changes, earlier runs have no score for new habits and the report says the versions differ.
