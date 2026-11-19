@@ -179,6 +179,47 @@ def cmd_summary(args) -> None:
             print(f"- {th['rule']}  ({th['where']}; {th['title']})")
 
 
+def cmd_rank(args) -> None:
+    import json as _json
+    from .card import render_card
+    from .rank import MIN_CONVERSATIONS, issue_url, payload, weekly
+    runs = load_runs()
+    lang = _lang(args, runs)
+    rubric = load_rubric(args.rubric, lang)
+    w = weekly(runs, rubric, days=args.days)
+    print(t("rank_head", lang, week=w["week"], days=w["days"], n=w["conversations"]))
+    if not w["conversations"]:
+        sys.exit(t("rank_none", lang))
+    print(t("rank_score", lang, score=w["score"], quality=w["quality"], bonus=w["bonus"]))
+    if w["improvement"] is not None:
+        print(t("rank_imp", lang, imp=("+" if w["improvement"] >= 0 else "") + str(w["improvement"])))
+    if not w["eligible"]:
+        print(t("rank_min", lang, min=MIN_CONVERSATIONS))
+    rdir = coach_home() / "rank"
+    rdir.mkdir(exist_ok=True)
+    prof = rdir / "profile.json"
+    saved = _json.loads(prof.read_text(encoding="utf-8")) if prof.exists() else {}
+    nick = args.nickname or saved.get("nickname") or ""
+    league = args.league if args.league is not None else saved.get("league", "")
+    if args.nickname or args.league is not None:
+        prof.write_text(_json.dumps({"nickname": nick, "league": league}, ensure_ascii=False), encoding="utf-8")
+    p = payload(w, nick or "anonymous", league)
+    (rdir / f"{w['week']}.json").write_text(_json.dumps(p, ensure_ascii=False, indent=1), encoding="utf-8")
+    card = rdir / f"card-{w['week']}.html"
+    card.write_text(render_card(p, rubric, lang, MIN_CONVERSATIONS), encoding="utf-8")
+    print(t("rank_card", lang, path=card))
+    if not args.no_open:
+        webbrowser.open(card.as_uri())
+    if args.submit:
+        if not nick:
+            sys.exit(t("rank_nick", lang))
+        if not w["eligible"]:
+            sys.exit(t("rank_min", lang, min=MIN_CONVERSATIONS))
+        print(t("rank_sub", lang))
+        print(_json.dumps(p, ensure_ascii=False))
+        webbrowser.open(issue_url(args.repo, p))
+
+
 def cmd_history(args) -> None:
     runs = load_runs()
     lang = _lang(args, runs)
@@ -241,6 +282,16 @@ def main(argv=None) -> None:
     common(sp, window=False)
     sp.add_argument("--limit", type=int, default=5)
     sp.set_defaults(func=cmd_summary)
+
+    sp = sub.add_parser("rank", help=h("h_rank"))
+    common(sp, window=False)
+    sp.add_argument("--days", type=int, default=7, help=h("h_days"))
+    sp.add_argument("--nickname", help=h("h_nick"))
+    sp.add_argument("--league", help=h("h_league"))
+    sp.add_argument("--submit", action="store_true", help=h("h_submit"))
+    sp.add_argument("--repo", default="1017toa/agent-coach", help=argparse.SUPPRESS)
+    sp.add_argument("--no-open", action="store_true", help=h("h_noopen"))
+    sp.set_defaults(func=cmd_rank)
 
     sp = sub.add_parser("history", help=h("h_history"))
     common(sp, window=False)

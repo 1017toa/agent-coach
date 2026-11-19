@@ -133,6 +133,7 @@ codex plugin add agent-coach@agent-coach
 ```bash
 agent-coach scan        # 채점 대상만 미리 보기 (모델 호출 없음)
 agent-coach run         # 채점 → 회차 저장 → 리포트 열기
+agent-coach rank        # 주간 점수, 공유 카드, 원하면 랭킹 제출
 agent-coach summary     # 최근 회차를 글로: 약한 습관, 고쳐 쓰기, 추가할 규칙
 agent-coach history     # 회차별 점수표
 agent-coach report      # 저장된 회차로 리포트 다시 만들기
@@ -151,6 +152,22 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 설치 없이 소스에서 실행: `python -m agentcoach run`. 최신 개발 버전: `pip install git+https://github.com/1017toa/agent-coach.git`.
 
 **주기적으로 채점하기**: 1~2주마다 `agent-coach run`을 돌리면 새 대화만 채점해 추이에 더합니다. Claude Code는 기본 설정에서 30일 지난 대화를 지우므로 그보다 짧은 간격이 좋습니다.
+
+## 주간 랭킹
+
+다른 Claude Code·Codex 사용자와 비교하거나, 반·팀끼리 리그를 열 수 있습니다.
+
+```bash
+agent-coach rank                          # 내 주간 점수와 공유 카드 (아무것도 보내지 않음)
+agent-coach rank --nickname neo --submit  # 공개 랭킹에 제출
+agent-coach rank --league 18기            # 같은 리그끼리 비교
+```
+
+- **주간 점수 = 품질 × 활동 보너스.** 품질은 최근 7일 대화의 평균 점수입니다. 보너스는 대화 수에 따라 천천히 오르고(5개면 ×1.16, 20개부터 ×1.3에서 멈춤), 많이 써도 조금 유리할 뿐 잘 쓴 사람이 이깁니다.
+- LLM으로 채점한 대화만 셉니다(오프라인 키워드 채점은 비교가 안 됨). 3개 이상이어야 순위에 오릅니다.
+- **공유 카드:** `rank`가 PNG 저장 버튼과 공유 문구가 있는 카드를 만들어 줍니다. X, 링크드인, 단톡방에 바로 올릴 수 있습니다.
+- **제출**하면 미리 채운 GitHub 이슈가 열리고, 확인 후 직접 보냅니다. 숫자, 닉네임, 리그만 들어 있고 지시문·프로젝트·경로는 없습니다. 봇이 검사한 뒤 순위를 답글로 알려 주고 [랭킹 페이지](https://1017toa.github.io/agent-coach/leaderboard/)를 갱신합니다. GitHub 계정당 주 1건이며 가장 최근 것이 반영됩니다.
+- 채점이 각자 PC에서 돌기 때문에 점수는 자기 신고입니다. 가벼운 대결로 즐겨 주세요.
 
 ## 다른 도구와 비교
 

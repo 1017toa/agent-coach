@@ -133,6 +133,7 @@ Causes are classified only with an LLM judge; keyword scoring finds the signals 
 ```bash
 agent-coach scan        # preview which conversations would be graded (no model calls)
 agent-coach run         # grade → save the run → open the report
+agent-coach rank        # weekly score, share card, optional leaderboard submission
 agent-coach summary     # latest run as text: weakest habits, rewrites, rules to add
 agent-coach history     # score table per run
 agent-coach report      # rebuild the report from saved runs
@@ -151,6 +152,22 @@ agent-coach report      # rebuild the report from saved runs
 From a checkout without installing: `python -m agentcoach run`. Latest development version: `pip install git+https://github.com/1017toa/agent-coach.git`.
 
 **Grade on a schedule.** Run `agent-coach run` every week or two; each run grades only what's new and adds to the trend. Claude Code deletes transcripts older than 30 days by default, so keep the interval shorter than that.
+
+## Weekly ranking
+
+See how you compare with other Claude Code and Codex users, or run a league for your class or team.
+
+```bash
+agent-coach rank                          # your weekly score and a share card (nothing is sent)
+agent-coach rank --nickname neo --submit  # submit to the public leaderboard
+agent-coach rank --league class-18        # compare within a group
+```
+
+- **Weekly score = quality × activity bonus.** Quality is the mean grade of your conversations from the last 7 days. The bonus rises slowly with the number of conversations (×1.16 at 5, capped at ×1.3 from 20), so using agents a lot helps a little, but prompting well wins.
+- Only LLM-graded conversations count (offline keyword scores aren't comparable), and you need at least 3 to be ranked.
+- **Share card:** `rank` writes a card with a PNG download and share text, ready for X, LinkedIn or a class chat.
+- **Submitting** opens a pre-filled GitHub issue that you review and send. It contains only numbers, your nickname and an optional league: no prompts, projects or paths. A bot validates it, replies with your rank and updates the [leaderboard](https://1017toa.github.io/agent-coach/leaderboard/). One entry per GitHub account per week; the newest counts.
+- Scores are self-reported, since grading runs on your own machine. Treat the board as a friendly challenge.
 
 ## How it compares
 

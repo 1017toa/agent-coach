@@ -1,0 +1,47 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>agent-coach leaderboard</title>
+<meta name="description" content="Weekly leaderboard of prompting scores for Claude Code and Codex users, graded by agent-coach.">
+<style>
+:root{--bg:#f6f6f8;--fg:#1d1d22;--muted:#6b6b76;--card:#fff;--line:#e4e4ea;--acc:#3b5bdb;--gold:#e8a800}
+@media (prefers-color-scheme:dark){:root{--bg:#141418;--fg:#ececf1;--muted:#9a9aa6;--card:#1d1d23;--line:#2c2c35;--acc:#7c93ff}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif}
+main{max-width:920px;margin:0 auto;padding:24px 16px 60px}h1{margin:0 0 4px;font-size:28px}p{color:var(--muted);margin:4px 0 16px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}select,button{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-variant-numeric:tabular-nums}th{color:var(--muted);font-weight:600;font-size:13px}
+td.n{text-align:right}tr:last-child td{border-bottom:0}.r1{color:var(--gold);font-weight:800}.chip{font-size:12px;color:var(--muted)}
+a{color:var(--acc)}.empty{padding:30px;text-align:center;color:var(--muted)}
+@media (max-width:640px){.hide{display:none}}
+</style></head><body><main>
+<h1>agent-coach leaderboard</h1>
+<p>Weekly prompting scores for Claude Code and Codex. Score = quality (mean grade of LLM-judged conversations) × a small activity bonus (up to ×1.3). Scores are self-reported: grading runs on each person's own machine. <a href="https://github.com/1017toa/agent-coach#weekly-ranking">How to join</a></p>
+<div class="bar"><select id="week"></select><select id="league"></select>
+<button id="t-score" class="on">Top score</button><button id="t-imp">Most improved</button></div>
+<div id="board"></div>
+<p class="chip" id="upd"></p>
+</main>
+<script id="data" type="application/json">{"updated": "2026-11-19T06:40:46+00:00", "weeks": {}}</script>
+<script>
+const D = JSON.parse(document.getElementById("data").textContent);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const W = Object.keys(D.weeks), $ = id => document.getElementById(id);
+let mode = "score";
+$("week").innerHTML = W.map(w => `<option>${w}</option>`).join("") || "<option>-</option>";
+function leagues(){ const s = new Set((D.weeks[$("week").value] || []).map(e => e.league).filter(Boolean));
+  $("league").innerHTML = `<option value="">All leagues</option>` + [...s].sort().map(l => `<option>${esc(l)}</option>`).join(""); }
+function draw(){
+  let rows = (D.weeks[$("week").value] || []).filter(e => !$("league").value || e.league === $("league").value);
+  if (mode === "imp") rows = rows.filter(e => e.improvement != null).sort((a, b) => b.improvement - a.improvement);
+  if (!rows.length) { $("board").innerHTML = `<div class="empty">No submissions yet for this view.</div>`; return; }
+  $("board").innerHTML = `<table><tr><th>#</th><th>Name</th><th class="n">${mode === "imp" ? "Change" : "Score"}</th><th class="n hide">Quality</th><th class="n hide">Convos</th><th class="hide">League</th></tr>` +
+    rows.map((e, i) => `<tr><td class="${i ? "" : "r1"}">${i + 1}</td><td>${esc(e.nickname)} <span class="chip">@${esc(e.login)}</span></td>
+    <td class="n"><b>${mode === "imp" ? (e.improvement >= 0 ? "+" : "") + e.improvement : e.score}</b></td><td class="n hide">${e.quality}</td>
+    <td class="n hide">${e.conversations}</td><td class="hide chip">${esc(e.league)}</td></tr>`).join("") + `</table>`;
+}
+$("week").onchange = () => { leagues(); draw(); }; $("league").onchange = draw;
+$("t-score").onclick = () => { mode = "score"; $("t-score").classList.add("on"); $("t-imp").classList.remove("on"); draw(); };
+$("t-imp").onclick = () => { mode = "imp"; $("t-imp").classList.add("on"); $("t-score").classList.remove("on"); draw(); };
+$("upd").textContent = "Updated " + D.updated;
+leagues(); draw();
+</script></body></html>

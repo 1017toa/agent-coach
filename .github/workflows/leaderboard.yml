@@ -1,0 +1,42 @@
+name: Leaderboard
+
+# Rebuilds docs/leaderboard/ from '[rank]' issues opened by `agent-coach rank --submit`.
+# GitHub Pages serves it from the main branch /docs folder.
+on:
+  issues:
+    types: [opened, edited]
+  schedule:
+    - cron: "17 0 * * 1"     # Mondays: refresh after the week rolls over
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: leaderboard
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, '[rank]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build leaderboard
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: python scripts/leaderboard.py ${ISSUE:+--issue "$ISSUE"}
+      - name: Commit
+        run: |
+          git config user.name "agent-coach-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/leaderboard
+          git diff --cached --quiet && exit 0
+          git commit -m "Update leaderboard"
+          git pull --rebase
+          git push

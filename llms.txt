@@ -8,6 +8,7 @@ What it does:
 - Finds "missed responses": turns where the user didn't get what they wanted, classified as prompt gap, agent error, changed mind or external limit. Short prompts are not penalized when context carried the intent.
 - Groups recurring prompt gaps into one-line rules and says where to put them (CLAUDE.md / AGENTS.md, memory, skill, hook).
 - Saves every run to ~/.agent-coach/history so progress can be tracked over time.
+- Weekly ranking: `agent-coach rank` computes quality x activity bonus over the last 7 days, makes a share card, and can submit numbers only to a public GitHub-based leaderboard (https://1017toa.github.io/agent-coach/leaderboard/).
 - Grades through the user's signed-in `claude` or `codex` CLI (no API key), or offline with keyword heuristics.
 - Masks secrets and contact details before sending anything to the judge. Zero dependencies, Python 3.10+, MIT license. English and Korean.
 

@@ -43,7 +43,7 @@ Run `agent-coach summary` (add `--lang`). From its output, tell the user:
 
 Finish with the report path it printed (`~/.agent-coach/report.html`) and offer to open it. Suggest running this again in a week or two; only new conversations are graded and the trend builds up.
 
-Other commands: `agent-coach history` (score table per run), `agent-coach report` (rebuild the HTML).
+Other commands: `agent-coach history` (score table per run), `agent-coach report` (rebuild the HTML), `agent-coach rank` (weekly score and share card; add `--nickname <name> --submit` only when the user asks to join the public leaderboard, since it opens a GitHub issue for them to send).
 
 ## Privacy
 
