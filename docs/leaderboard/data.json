@@ -1,5 +1,70 @@
 {
- "updated": "2026-11-19T06:54:34+00:00",
+ "updated": "2026-11-21T03:01:47+00:00",
+ "tiers": [
+  {
+   "id": "iron",
+   "min": 0,
+   "en": "Iron",
+   "ko": "아이언",
+   "from": "#6b6f76",
+   "to": "#2f3237",
+   "accent": "#d0d3d8"
+  },
+  {
+   "id": "bronze",
+   "min": 30,
+   "en": "Bronze",
+   "ko": "브론즈",
+   "from": "#c07a43",
+   "to": "#6b3a1b",
+   "accent": "#ffd9b8"
+  },
+  {
+   "id": "silver",
+   "min": 45,
+   "en": "Silver",
+   "ko": "실버",
+   "from": "#9aa6b4",
+   "to": "#4a5563",
+   "accent": "#f1f5f9"
+  },
+  {
+   "id": "gold",
+   "min": 60,
+   "en": "Gold",
+   "ko": "골드",
+   "from": "#f2b51d",
+   "to": "#b4560d",
+   "accent": "#fff2b3"
+  },
+  {
+   "id": "platinum",
+   "min": 75,
+   "en": "Platinum",
+   "ko": "플래티넘",
+   "from": "#2bc4b4",
+   "to": "#1c6f8a",
+   "accent": "#d6fff9"
+  },
+  {
+   "id": "diamond",
+   "min": 90,
+   "en": "Diamond",
+   "ko": "다이아몬드",
+   "from": "#5ab0ff",
+   "to": "#6b3cf0",
+   "accent": "#c3f0ff"
+  },
+  {
+   "id": "master",
+   "min": 105,
+   "en": "Master",
+   "ko": "마스터",
+   "from": "#ff5ea8",
+   "to": "#7a2cff",
+   "accent": "#ffe066"
+  }
+ ],
  "weeks": {
   "2026-W47": [
    {
@@ -30,7 +95,8 @@
      "claude"
     ],
     "issue": 1,
-    "submitted": "2026-11-19T06:54:25Z"
+    "submitted": "2026-11-19T06:54:25Z",
+    "tier": "gold"
    }
   ]
  }

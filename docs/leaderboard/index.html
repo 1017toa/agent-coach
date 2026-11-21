@@ -1,43 +1,79 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>agent-coach leaderboard</title>
-<meta name="description" content="Weekly leaderboard of prompting scores for Claude Code and Codex users, graded by agent-coach.">
+<meta name="description" content="Weekly leaderboard and tiers of prompting scores for Claude Code and Codex users, graded by agent-coach.">
 <style>
-:root{--bg:#f6f6f8;--fg:#1d1d22;--muted:#6b6b76;--card:#fff;--line:#e4e4ea;--acc:#3b5bdb;--gold:#e8a800}
-@media (prefers-color-scheme:dark){:root{--bg:#141418;--fg:#ececf1;--muted:#9a9aa6;--card:#1d1d23;--line:#2c2c35;--acc:#7c93ff}}
+:root{--bg:#f6f6f8;--fg:#1d1d22;--muted:#6b6b76;--card:#fff;--line:#e4e4ea;--acc:#3b5bdb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f0f13;--fg:#ececf1;--muted:#9a9aa6;--card:#1a1a20;--line:#2a2a33;--acc:#8a9dff}}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif}
-main{max-width:920px;margin:0 auto;padding:24px 16px 60px}h1{margin:0 0 4px;font-size:28px}p{color:var(--muted);margin:4px 0 16px}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}select,button{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+main{max-width:960px;margin:0 auto;padding:28px 16px 64px}h1{margin:0 0 4px;font-size:30px;letter-spacing:-.5px}
+p{color:var(--muted);margin:4px 0 16px;line-height:1.5}a{color:var(--acc)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}select,button{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.dist{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--line);margin:8px 0 4px}.dist i{display:block;height:100%;transition:width .8s}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-bottom:14px}.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:12px;align-items:end;margin:18px 0}
+.pod{border-radius:18px;padding:16px 12px;text-align:center;color:#fff;position:relative;overflow:hidden;animation:rise .7s cubic-bezier(.2,1.3,.4,1) both;box-shadow:0 10px 30px #0003}
+.pod.p1{padding:24px 12px;animation-delay:.15s}.pod.p2{animation-delay:.3s}.pod.p3{animation-delay:.45s}
+.pod .m{font-size:30px}.pod .nm{font-weight:800;font-size:17px;margin-top:4px;word-break:break-all}.pod .sc{font-size:34px;font-weight:900;margin-top:2px}.pod .tr{font-size:12px;opacity:.9}
+.pod::after{content:"";position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:linear-gradient(90deg,#fff0,#fff5,#fff0);transform:rotate(18deg);animation:sweep 3.5s ease-in-out 1s infinite}
+.pod.p1{outline:3px solid #ffe066;animation:rise .7s cubic-bezier(.2,1.3,.4,1) .15s both,glow 2.4s ease-in-out 1s infinite}
+@keyframes rise{from{transform:translateY(30px) scale(.9);opacity:0}}@keyframes sweep{0%{left:-60%}55%,100%{left:130%}}
+@keyframes glow{50%{box-shadow:0 0 0 6px #ffe06655,0 10px 40px #ffd43b88}}
 table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden}
 th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-variant-numeric:tabular-nums}th{color:var(--muted);font-weight:600;font-size:13px}
-td.n{text-align:right}tr:last-child td{border-bottom:0}.r1{color:var(--gold);font-weight:800}.chip{font-size:12px;color:var(--muted)}
-a{color:var(--acc)}.empty{padding:30px;text-align:center;color:var(--muted)}
-@media (max-width:640px){.hide{display:none}}
+td.n{text-align:right}tr:last-child td{border-bottom:0}tr.row{animation:fade .5s ease both}@keyframes fade{from{opacity:0;transform:translateX(-8px)}}
+.tier{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 4px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
+.tier .hx{width:18px;height:18px;display:grid;place-items:center;font-size:11px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:#fff3}
+.tier.master,.tier.diamond{position:relative;overflow:hidden}.tier.master::after,.tier.diamond::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,#fff0 30%,#fff8 50%,#fff0 70%);transform:translateX(-100%);animation:chip 2.6s ease-in-out infinite}
+@keyframes chip{60%,100%{transform:translateX(100%)}}
+.chip{font-size:12px;color:var(--muted)}.empty{padding:30px;text-align:center;color:var(--muted);background:var(--card);border-radius:14px}
+@media (max-width:640px){.hide{display:none}.podium{gap:8px}.pod .sc{font-size:26px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body><main>
 <h1>agent-coach leaderboard</h1>
-<p>Weekly prompting scores for Claude Code and Codex. Score = quality (mean grade of LLM-judged conversations) × a small activity bonus (up to ×1.3). Scores are self-reported: grading runs on each person's own machine. <a href="https://github.com/1017toa/agent-coach#weekly-ranking">How to join</a></p>
+<p>Weekly prompting scores for Claude Code and Codex. Score = quality (mean grade of LLM-judged conversations) × a small activity bonus (up to ×1.3), and the score sets your tier. Scores are self-reported: grading runs on each person's own machine. <a href="https://github.com/1017toa/agent-coach#weekly-ranking">How to join</a></p>
 <div class="bar"><select id="week"></select><select id="league"></select>
 <button id="t-score" class="on">Top score</button><button id="t-imp">Most improved</button></div>
+<div class="dist" id="dist"></div><div class="legend" id="legend"></div>
+<div id="podium"></div>
 <div id="board"></div>
 <p class="chip" id="upd"></p>
 </main>
-<script id="data" type="application/json">{"updated": "2026-11-19T06:54:34+00:00", "weeks": {"2026-W47": [{"login": "1017toa", "nickname": "coach-maker", "league": "", "week": "2026-W47", "conversations": 8, "quality": 54.6, "bonus": 1.208, "score": 66.0, "improvement": -2.8, "habits": {"specific_context": 50, "done_criteria": 21, "constraints": 38, "hand_over": 94, "scope_signal": 62, "plan_first": 25, "stop_conditions": 38, "evidence": 58, "steering": 86, "reusable_guidance": 75, "focused_session": 25, "model_effort": 93}, "sources": ["claude"], "issue": 1, "submitted": "2026-11-19T06:54:25Z"}]}}</script>
+<script id="data" type="application/json">{"updated": "2026-11-21T03:01:47+00:00", "tiers": [{"id": "iron", "min": 0, "en": "Iron", "ko": "아이언", "from": "#6b6f76", "to": "#2f3237", "accent": "#d0d3d8"}, {"id": "bronze", "min": 30, "en": "Bronze", "ko": "브론즈", "from": "#c07a43", "to": "#6b3a1b", "accent": "#ffd9b8"}, {"id": "silver", "min": 45, "en": "Silver", "ko": "실버", "from": "#9aa6b4", "to": "#4a5563", "accent": "#f1f5f9"}, {"id": "gold", "min": 60, "en": "Gold", "ko": "골드", "from": "#f2b51d", "to": "#b4560d", "accent": "#fff2b3"}, {"id": "platinum", "min": 75, "en": "Platinum", "ko": "플래티넘", "from": "#2bc4b4", "to": "#1c6f8a", "accent": "#d6fff9"}, {"id": "diamond", "min": 90, "en": "Diamond", "ko": "다이아몬드", "from": "#5ab0ff", "to": "#6b3cf0", "accent": "#c3f0ff"}, {"id": "master", "min": 105, "en": "Master", "ko": "마스터", "from": "#ff5ea8", "to": "#7a2cff", "accent": "#ffe066"}], "weeks": {"2026-W47": [{"login": "1017toa", "nickname": "coach-maker", "league": "", "week": "2026-W47", "conversations": 8, "quality": 54.6, "bonus": 1.208, "score": 66.0, "improvement": -2.8, "habits": {"specific_context": 50, "done_criteria": 21, "constraints": 38, "hand_over": 94, "scope_signal": 62, "plan_first": 25, "stop_conditions": 38, "evidence": 58, "steering": 86, "reusable_guidance": 75, "focused_session": 25, "model_effort": 93}, "sources": ["claude"], "issue": 1, "submitted": "2026-11-19T06:54:25Z", "tier": "gold"}]}}</script>
 <script>
 const D = JSON.parse(document.getElementById("data").textContent);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const W = Object.keys(D.weeks), $ = id => document.getElementById(id);
+const T = Object.fromEntries((D.tiers || []).map(t => [t.id, t]));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const badge = id => { const t = T[id] || {en: "?", from: "#888", to: "#555"};
+  return `<span class="tier ${esc(id)}" style="background:linear-gradient(90deg,${t.from},${t.to})"><span class="hx">${esc(t.en[0])}</span>${esc(t.en)}</span>`; };
+const MED = ["🥇", "🥈", "🥉"];
 let mode = "score";
 $("week").innerHTML = W.map(w => `<option>${w}</option>`).join("") || "<option>-</option>";
+$("legend").innerHTML = (D.tiers || []).map(t => `<span><b style="background:${t.from}"></b>${esc(t.en)} ${t.min}+</span>`).join("");
 function leagues(){ const s = new Set((D.weeks[$("week").value] || []).map(e => e.league).filter(Boolean));
   $("league").innerHTML = `<option value="">All leagues</option>` + [...s].sort().map(l => `<option>${esc(l)}</option>`).join(""); }
+function countUp(){ if (reduce) return; document.querySelectorAll("[data-n]").forEach(el => { const fin = parseFloat(el.dataset.n), t0 = performance.now(), sign = el.dataset.sign || "";
+  const f = now => { const k = Math.min(1, (now - t0) / 900), v = fin * (1 - Math.pow(1 - k, 3)); el.textContent = sign + (Math.round(v * 10) / 10).toFixed(1);
+    if (k < 1) requestAnimationFrame(f); else el.textContent = sign + fin.toFixed(1); }; requestAnimationFrame(f); }); }
 function draw(){
   let rows = (D.weeks[$("week").value] || []).filter(e => !$("league").value || e.league === $("league").value);
+  const all = rows.length;
+  $("dist").innerHTML = (D.tiers || []).map(t => { const n = rows.filter(e => e.tier === t.id).length;
+    return n ? `<i title="${esc(t.en)}: ${n}" style="width:${n / all * 100}%;background:linear-gradient(90deg,${t.from},${t.to})"></i>` : ""; }).join("");
   if (mode === "imp") rows = rows.filter(e => e.improvement != null).sort((a, b) => b.improvement - a.improvement);
-  if (!rows.length) { $("board").innerHTML = `<div class="empty">No submissions yet for this view.</div>`; return; }
-  $("board").innerHTML = `<table><tr><th>#</th><th>Name</th><th class="n">${mode === "imp" ? "Change" : "Score"}</th><th class="n hide">Quality</th><th class="n hide">Convos</th><th class="hide">League</th></tr>` +
-    rows.map((e, i) => `<tr><td class="${i ? "" : "r1"}">${i + 1}</td><td>${esc(e.nickname)} <span class="chip">@${esc(e.login)}</span></td>
-    <td class="n"><b>${mode === "imp" ? (e.improvement >= 0 ? "+" : "") + e.improvement : e.score}</b></td><td class="n hide">${e.quality}</td>
+  const val = e => mode === "imp" ? e.improvement : e.score, sign = e => mode === "imp" && e.improvement >= 0 ? "+" : "";
+  if (!rows.length) { $("podium").innerHTML = ""; $("board").innerHTML = `<div class="empty">No submissions yet for this view.</div>`; return; }
+  const top = rows.slice(0, 3), order = [1, 0, 2].filter(i => top[i]);
+  $("podium").innerHTML = `<div class="podium">` + [1, 0, 2].map(i => { const e = top[i]; if (!e) return "<div></div>"; const t = T[e.tier] || {};
+    return `<div class="pod p${i + 1}" style="background:linear-gradient(150deg,${t.from},${t.to})"><div class="m">${MED[i]}</div><div class="nm">${esc(e.nickname)}</div>
+    <div class="sc" data-n="${val(e)}" data-sign="${sign(e)}">${sign(e)}${val(e)}</div><div class="tr">${esc(t.en || "")} · @${esc(e.login)}</div></div>`; }).join("") + `</div>`;
+  $("board").innerHTML = `<table><tr><th>#</th><th>Name</th><th>Tier</th><th class="n">${mode === "imp" ? "Change" : "Score"}</th><th class="n hide">Quality</th><th class="n hide">Convos</th><th class="hide">League</th></tr>` +
+    rows.map((e, i) => `<tr class="row" style="animation-delay:${Math.min(i, 20) * 40}ms"><td>${MED[i] || i + 1}</td><td>${esc(e.nickname)} <span class="chip">@${esc(e.login)}</span></td>
+    <td>${badge(e.tier)}</td><td class="n"><b data-n="${val(e)}" data-sign="${sign(e)}">${sign(e)}${val(e)}</b></td><td class="n hide">${e.quality}</td>
     <td class="n hide">${e.conversations}</td><td class="hide chip">${esc(e.league)}</td></tr>`).join("") + `</table>`;
+  countUp();
 }
 $("week").onchange = () => { leagues(); draw(); }; $("league").onchange = draw;
 $("t-score").onclick = () => { mode = "score"; $("t-score").classList.add("on"); $("t-imp").classList.remove("on"); draw(); };
