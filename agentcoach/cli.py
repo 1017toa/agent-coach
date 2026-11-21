@@ -191,6 +191,11 @@ def cmd_rank(args) -> None:
     if not w["conversations"]:
         sys.exit(t("rank_none", lang))
     print(t("rank_score", lang, score=w["score"], quality=w["quality"], bonus=w["bonus"]))
+    from .rank import tier_of
+    tr = tier_of(w["score"])
+    nxt = t("rank_next", lang, gap=tr["gap"], tier=tr["next_ko" if lang == "ko" else "next_en"]) \
+        if tr["next"] else t("rank_top", lang)
+    print(t("rank_tier", lang, tier=tr["ko" if lang == "ko" else "en"], next=nxt))
     if w["improvement"] is not None:
         print(t("rank_imp", lang, imp=("+" if w["improvement"] >= 0 else "") + str(w["improvement"])))
     if not w["eligible"]:

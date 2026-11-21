@@ -45,6 +45,18 @@ class Weekly(unittest.TestCase):
         self.assertNotIn("secret-project", json.dumps(p))
         self.assertIn("issues/new?title=", issue_url("o/r", p))
 
+    def test_tiers(self):
+        from agentcoach.rank import tier_of
+        self.assertEqual(tier_of(0)["id"], "iron")
+        self.assertEqual(tier_of(59.9)["id"], "silver")
+        self.assertEqual(tier_of(60)["id"], "gold")
+        g = tier_of(66)
+        self.assertEqual((g["next"], g["gap"]), ("platinum", 9.0))
+        self.assertAlmostEqual(g["progress"], 0.4)
+        m = tier_of(120)
+        self.assertEqual((m["id"], m["next"], m["progress"]), ("master", None, 1.0))
+        self.assertEqual(tier_of(None)["id"], "iron")
+
     def test_card_escapes_nickname(self):
         rubric = load_rubric(lang="ko")
         w = weekly([{"created": NOW.isoformat(), "sessions": [sess(1, 1, 2)]}], rubric, end=NOW)
@@ -81,6 +93,8 @@ class Leaderboard(unittest.TestCase):
         board = lb.build([a1, a2, b])
         rows = board["weeks"]["2026-W47"]
         self.assertEqual([r["issue"] for r in rows], [2, 3])
+        self.assertEqual([r["tier"] for r in rows], ["platinum", "platinum"])   # 84 and 78
+        self.assertEqual(board["tiers"][0]["id"], "iron")
 
 
 if __name__ == "__main__":

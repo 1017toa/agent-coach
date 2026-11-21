@@ -21,6 +21,34 @@ BONUS_FULL_AT = 20
 WINDOW_DAYS = 7
 
 
+# Weekly score runs 0-130 (quality 0-100 x bonus up to 1.3). Master needs near-perfect prompting
+# and steady use; Gold is roughly "good habits most of the time".
+TIERS = [
+    # min score, id, Korean, English, gradient (from, to), accent
+    (105, "master", "마스터", "Master", ("#ff5ea8", "#7a2cff"), "#ffe066"),
+    (90, "diamond", "다이아몬드", "Diamond", ("#5ab0ff", "#6b3cf0"), "#c3f0ff"),
+    (75, "platinum", "플래티넘", "Platinum", ("#2bc4b4", "#1c6f8a"), "#d6fff9"),
+    (60, "gold", "골드", "Gold", ("#f2b51d", "#b4560d"), "#fff2b3"),
+    (45, "silver", "실버", "Silver", ("#9aa6b4", "#4a5563"), "#f1f5f9"),
+    (30, "bronze", "브론즈", "Bronze", ("#c07a43", "#6b3a1b"), "#ffd9b8"),
+    (0, "iron", "아이언", "Iron", ("#6b6f76", "#2f3237"), "#d0d3d8"),
+]
+
+
+def tier_of(score: float | None) -> dict:
+    """The tier for a weekly score, plus how far the next one is."""
+    s = score or 0
+    for i, (lo, tid, ko, en, grad, accent) in enumerate(TIERS):
+        if s >= lo:
+            nxt = TIERS[i - 1] if i else None
+            return {"id": tid, "ko": ko, "en": en, "from": grad[0], "to": grad[1], "accent": accent,
+                    "min": lo, "next": nxt[1] if nxt else None, "next_ko": nxt[2] if nxt else None,
+                    "next_en": nxt[3] if nxt else None, "next_min": nxt[0] if nxt else None,
+                    "gap": round(nxt[0] - s, 1) if nxt else 0.0,
+                    "progress": round(min(1.0, (s - lo) / (nxt[0] - lo)), 3) if nxt else 1.0}
+    return tier_of(0)
+
+
 def activity_bonus(n: int) -> float:
     if n <= 1:
         return 1.0
@@ -97,7 +125,7 @@ def payload(w: dict, nickname: str, league: str = "") -> dict:
         "schema": SCHEMA, "tool": "agent-coach", "version": __version__,
         "nickname": nickname[:32], "league": league[:32],
         "week": w["week"], "conversations": w["conversations"], "quality": w["quality"],
-        "bonus": w["bonus"], "score": w["score"], "improvement": w["improvement"],
+        "bonus": w["bonus"], "score": w["score"], "tier": tier_of(w["score"])["id"], "improvement": w["improvement"],
         "habits": w["habits"], "sources": w["sources"], "rubric_version": w["rubric_version"],
     }
 

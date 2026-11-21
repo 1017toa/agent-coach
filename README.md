@@ -164,6 +164,7 @@ agent-coach rank --league class-18        # compare within a group
 ```
 
 - **Weekly score = quality × activity bonus.** Quality is the mean grade of your conversations from the last 7 days. The bonus rises slowly with the number of conversations (×1.16 at 5, capped at ×1.3 from 20), so using agents a lot helps a little, but prompting well wins.
+- **Tiers** from the weekly score: Iron 0+ · Bronze 30+ · Silver 45+ · Gold 60+ · Platinum 75+ · Diamond 90+ · Master 105+. The card shows your tier, how far the next one is, and gets livelier as you climb (light sweep, stars from Platinum, confetti from Gold).
 - Only LLM-graded conversations count (offline keyword scores aren't comparable), and you need at least 3 to be ranked.
 - **Share card:** `rank` writes a card with a PNG download and share text, ready for X, LinkedIn or a class chat.
 - **Submitting** opens a pre-filled GitHub issue that you review and send. It contains only numbers, your nickname and an optional league: no prompts, projects or paths. A bot validates it, replies with your rank and updates the [leaderboard](https://1017toa.github.io/agent-coach/leaderboard/). One entry per GitHub account per week; the newest counts.

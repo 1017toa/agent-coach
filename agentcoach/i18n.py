@@ -102,6 +102,9 @@ M = {
                   "ko": "먼저 닉네임을 정해 주세요: agent-coach rank --nickname <이름> --submit"},
     "rank_sub": {"en": "Opening a pre-filled GitHub issue. Check it and press Submit; only the numbers below are sent:",
                  "ko": "미리 채운 GitHub 이슈를 엽니다. 확인 후 Submit을 누르면 아래 숫자만 올라갑니다:"},
+    "rank_tier": {"en": "Tier: {tier} ({next})", "ko": "티어: {tier} ({next})"},
+    "rank_next": {"en": "{gap} points to {tier}", "ko": "{tier}까지 {gap}점"},
+    "rank_top": {"en": "top tier", "ko": "최고 티어"},
 }
 
 
