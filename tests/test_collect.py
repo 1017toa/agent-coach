@@ -137,6 +137,15 @@ class Scoring(unittest.TestCase):
         self.assertEqual(r["reusable_guidance"]["score"], 0)
         self.assertIsNone(r["focused_session"]["score"])
 
+    def test_delegation_spoon_feeding(self):
+        rubric = load_rubric()
+        fed = _write([claude_user("로그인 화면 파일 열어줘"), claude_user("이제 버튼 고쳐줘"),
+                      claude_user("이제 테스트 돌려줘"), claude_user("그럼 커밋해줘")])
+        whole = _write([claude_user("로그인 버튼이 모바일에서 안 눌리는 거 고쳐줘. tests/login 통과하면 끝"),
+                        claude_user("좋아"), claude_user("커밋 메시지는 짧게"), claude_user("고마워")])
+        self.assertEqual(score_session(parse_claude_file(fed), rubric)["dimensions"]["delegation"]["score"], 0)
+        self.assertEqual(score_session(parse_claude_file(whole), rubric)["dimensions"]["delegation"]["score"], 2)
+
     def test_report_renders_old_runs(self):
         from agentcoach.report import render
         rubric = load_rubric()

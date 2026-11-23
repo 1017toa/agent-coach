@@ -23,20 +23,25 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-dark.png">
-  <img alt="agent-coach 리포트: 종합 점수, 이번에 집중할 습관 3개, 12개 지시 습관 레이더 차트, 약한 순서 목록" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-light.png" width="900">
+  <img alt="agent-coach 리포트: 종합 점수, 이번에 집중할 습관 3개, 지시 습관 레이더 차트, 약한 순서 목록" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/ko-overview-light.png" width="900">
 </picture>
 
 <sub>가상의 대화로 만든 데모 리포트입니다 (<code>python scripts/demo_report.py --lang ko</code>).</sub>
 
 </div>
 
-**agent-coach**는 Claude Code와 OpenAI Codex가 내 컴퓨터에 이미 저장해 둔 대화 기록(`~/.claude/projects`, `~/.codex/sessions`)을 읽어, Anthropic·OpenAI 공식 가이드와 아카데미에서 뽑은 12가지 습관으로 내가 AI에게 지시하는 방식을 채점하는 명령줄 도구입니다. 내가 실제로 쓴 지시를 더 나은 형태로 고쳐 주고, 원하는 응답을 못 받은 턴을 찾아 주며, 회차마다 점수를 쌓아 나아지고 있는지 보여 줍니다.
+**agent-coach**는 Claude Code와 OpenAI Codex가 내 컴퓨터에 이미 저장해 둔 대화 기록(`~/.claude/projects`, `~/.codex/sessions`)을 읽어, Anthropic·OpenAI 공식 가이드와 아카데미에서 뽑은 13가지 습관으로 내가 AI에게 지시하는 방식을 채점하는 명령줄 도구입니다. 내가 실제로 쓴 지시를 더 나은 형태로 고쳐 주고, 원하는 응답을 못 받은 턴을 찾아 주며, 회차마다 점수를 쌓아 나아지고 있는지 보여 줍니다. `agent-coach setup`으로는 에이전트가 돌아가는 환경(deny 규칙, 샌드박스, 훅, CI, `CLAUDE.md` / `AGENTS.md`)도 점검합니다.
 
 ## 빠른 시작
 
 ```bash
+uvx --from agent-coach-cli agent-coach run    # 설치 없이 바로 써 보기 (또는: pipx run --spec agent-coach-cli agent-coach run)
+```
+
+```bash
 pipx install agent-coach-cli    # 또는: uv tool install agent-coach-cli · pip install agent-coach-cli
-agent-coach run
+agent-coach run                 # 지시 습관 채점
+agent-coach setup               # 환경 점검 (모델 호출 없음)
 ```
 
 PyPI 패키지 이름은 `agent-coach-cli`이고, 설치되는 명령은 `agent-coach`입니다. `run`은 이미 로그인해 둔 `claude` 또는 `codex` CLI로 최근 대화를 채점하고, 결과를 저장한 뒤 HTML 리포트를 엽니다. API 키도, 서버도, 추가 의존성도 필요 없습니다. 채점 전에 대상만 보고 싶다면 `agent-coach scan`을 쓰세요. 모델을 부르지 않습니다.
@@ -65,6 +70,7 @@ codex plugin add agent-coach@agent-coach
 - **내 실제 지시를 고쳐 쓰기**: 일반론 대신 "이렇게 썼는데, 이렇게 썼다면 나았다. 이유는…"을 보여 줍니다.
 - **짧은 지시는 감점하지 않음**: 대화가 길어지면 "응 해줘"로 충분할 때가 많습니다. 실제로 원하는 응답을 못 받았고 원인이 내 지시의 빈틈일 때만 코칭합니다.
 - **적어 둘 규칙을 찾아 줌**: 여러 대화에서 반복되는 빈틈을 한 줄 규칙으로 묶고, 넣을 곳(`CLAUDE.md` / `AGENTS.md`, 메모리, 스킬, 훅)까지 알려 줍니다.
+- **지시뿐 아니라 환경도 점검**: 에이전트가 알아서 판단하고 승인할수록 보장은 하네스가 맡아야 합니다. 비밀 파일을 막는 deny 규칙, 테스트가 실패하면 에이전트를 되돌려 보내는 훅(종료 코드 2), 샌드박스, CI를 `agent-coach setup`이 로컬 파일만 읽고 바로 점검합니다.
 - **성장 기록**: 회차마다 `~/.agent-coach/history/`에 저장합니다. 원본 대화가 자동 삭제돼도 추이는 남습니다.
 - **Claude Code와 Codex를 같은 기준으로**, 한 리포트에서 봅니다.
 - **기본이 비공개**: 채점기로 보내기 전에 키·연락처를 가리고, 결과는 내 컴퓨터에만 남습니다.
@@ -88,7 +94,7 @@ codex plugin add agent-coach@agent-coach
   │
   ● 가리기    키, 이메일, 전화·주민·카드 번호, 주소, 직접 등록한 이름
   │
-  ● 채점      대화당 한 번, 내 claude / codex CLI로, 채점표 v3 (12개 습관)
+  ● 채점      대화당 한 번, 내 claude / codex CLI로, 채점표 v4 (13개 습관)
   │
   ● 저장      ~/.agent-coach/history/run-*.json
   │
@@ -97,7 +103,7 @@ codex plugin add agent-coach@agent-coach
 
 ## 채점 항목
 
-12개 습관을 그 습관이 필요했던 대화에서만 0 / 1 / 2로 매기고, 평균을 0~100점으로 바꿉니다.
+13개 습관을 그 습관이 필요했던 대화에서만 0 / 1 / 2로 매기고, 평균을 0~100점으로 바꿉니다.
 
 | 항목 | 공식 가이드가 권하는 것 |
 |---|---|
@@ -109,8 +115,9 @@ codex plugin add agent-coach@agent-coach
 | 계획·인터뷰 먼저 | 크거나 모호한 일은 만들기 전에 계획하거나 질문받는다 |
 | 멈출 지점과 진행 방식 | 어디까지 혼자 하고 어디서 멈춰 물을지, 어떻게 보고할지 |
 | 증거 요구와 결과 검토 | 실행한 명령, 출력, diff를 받고, 새 세션으로 검토한다 |
-| 방향 바로잡기 | 두 번 고쳐도 안 되면 더 나은 지시로 새로 시작한다 |
-| 반복 지시는 규칙 파일로 | 매번 하는 말은 CLAUDE.md, AGENTS.md, 스킬에 둔다 |
+| 방향 바로잡기 | 고칠 때는 드물게, 일찍. 두 번 고쳐도 안 되면 더 나은 지시로 새로 시작한다 |
+| 반복 지시는 규칙 파일로 | CLAUDE.md·AGENTS.md에는 코드에서 안 보이는 것만 담담하게 적고, 예외 없는 규칙은 훅이나 deny 규칙으로 |
+| 통째로 맡기고 물러서기 | 한 단계씩 떠먹이지 말고 끝 기준과 함께 한 번에 맡긴다. 긴 일은 백그라운드·클라우드·병렬 세션으로 |
 | 한 대화에 한 가지 결과 | 새 일은 새 대화에서, 긴 대화는 정리한다 |
 | 모델·effort 선택 | 일의 난이도에 맞는 모델과 effort를 쓴다. 대화마다 실제로 쓴 모델·effort를 보고 판단 |
 
@@ -135,6 +142,7 @@ agent-coach scan        # 채점 대상만 미리 보기 (모델 호출 없음)
 agent-coach run         # 채점 → 회차 저장 → 리포트 열기
 agent-coach rank        # 주간 점수, 공유 카드, 원하면 랭킹 제출
 agent-coach summary     # 최근 회차를 글로: 약한 습관, 고쳐 쓰기, 추가할 규칙
+agent-coach setup       # deny 규칙·샌드박스·훅·CI·CLAUDE.md/AGENTS.md 점검 (CI용은 --json)
 agent-coach history     # 회차별 점수표
 agent-coach report      # 저장된 회차로 리포트 다시 만들기
 ```
@@ -152,6 +160,18 @@ agent-coach report      # 저장된 회차로 리포트 다시 만들기
 설치 없이 소스에서 실행: `python -m agentcoach run`. 최신 개발 버전: `pip install git+https://github.com/1017toa/agent-coach.git`.
 
 **주기적으로 채점하기**: 1~2주마다 `agent-coach run`을 돌리면 새 대화만 채점해 추이에 더합니다. Claude Code는 기본 설정에서 30일 지난 대화를 지우므로 그보다 짧은 간격이 좋습니다.
+
+## 환경 점검
+
+지시는 절반입니다. auto mode가 명령을 승인하고 모델이 스스로 방향을 잡는 지금, 몇 시간짜리 무인 작업을 안전하고 정확하게 지켜 주는 건 주변 환경입니다. `agent-coach setup`은 내 컴퓨터의 설정 파일만 읽고(어디로도 보내지 않고, 모델도 부르지 않음) 세 영역을 채점합니다.
+
+| 영역 | 점검 내용 |
+|---|---|
+| 안전 | `.env`·SSH 키를 막는 deny 규칙(deny 규칙은 auto mode 분류기보다 먼저 적용), `bypassPermissions`로 돌리지 않는지, 샌드박스(macOS·Linux·WSL2), Codex `sandbox_mode` |
+| 검증 | 테스트를 돌리는 Stop / TaskCompleted 훅, 편집 뒤 린트 훅, 실패 시 종료 코드 2로 끝나는 훅 스크립트(1이면 그냥 완료 처리됨), 저장소의 CI |
+| 지시 파일 | `CLAUDE.md` / `AGENTS.md`에 IMPORTANT·NEVER·!!! 강조가 쌓여 있지 않은지, 코드에서 보이는 기술 스택·폴더 구조 설명이 없는지, 짧은지 |
+
+경고마다 고치는 방법과 근거 문서를 함께 보여 줍니다. 프로젝트 폴더에서 실행하거나 `--project 경로`를 주세요. `--json`은 CI용 출력입니다.
 
 ## 주간 랭킹
 
@@ -212,9 +232,9 @@ agent-coach rank --league 18기            # 같은 리그끼리 비교
 
 ## 출처
 
-기본 채점표(v3)는 다음 자료로 만들었습니다.
+기본 채점표(v4)와 환경 점검은 다음 자료로 만들었습니다.
 
-- **Anthropic**: [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices), [모델 설정](https://code.claude.com/docs/en/model-config), [Claude Fable 5.2 프롬프트 가이드](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Opus 5.5 활용 가이드](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
+- **Anthropic**: [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices), [모델 설정](https://code.claude.com/docs/en/model-config), [Claude Fable 5.2 프롬프트 가이드](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Opus 5.5 활용 가이드](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/), [권한 모드](https://code.claude.com/docs/en/permission-modes), [샌드박스](https://code.claude.com/docs/en/sandboxing), [훅](https://code.claude.com/docs/en/hooks), [메모리](https://code.claude.com/docs/en/memory), [웹의 Claude Code](https://code.claude.com/docs/en/claude-code-on-the-web), [Claude 프로젝트](https://code.claude.com/docs/en/claude-projects)
 - **Claude 아카데미**: [AI Fluency: Framework & Foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/courses/claude-code-101), [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/courses/claude-101)
 - **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting), [GPT-5.6 프롬프트 가이드](https://developers.openai.com/api/docs/guides/prompt-guidance-gpt-5p6)
 - **OpenAI 아카데미**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (무료, 로그인 필요. 채점표는 네 칸 작업 지시, Plan 모드, 검증과 인계, 위임 계약, AGENTS.md 같은 구체적인 레슨을 근거로 씀)
@@ -223,6 +243,10 @@ agent-coach rank --league 18기            # 같은 리그끼리 비교
 
 ## 로드맵
 
+- 현재 티어와 하루 한 줄 팁을 보여 주는 상태줄
+- 프로필에 티어를 계속 걸어 둘 README 배지(SVG)
+- 월간·연간 "wrapped" 카드
+- PR마다 `agent-coach setup --json`을 돌리는 GitHub Action
 - 강의·팀용 익명 집계 내보내기
 - 맞춤 채점표 예시
 - Cursor, Gemini CLI 대화 기록 지원

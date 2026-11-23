@@ -105,6 +105,17 @@ M = {
     "rank_tier": {"en": "Tier: {tier} ({next})", "ko": "티어: {tier} ({next})"},
     "rank_next": {"en": "{gap} points to {tier}", "ko": "{tier}까지 {gap}점"},
     "rank_top": {"en": "top tier", "ko": "최고 티어"},
+    "h_setup": {"en": "Check the setup the agent runs in: deny rules, sandbox, hooks, CI, CLAUDE.md / AGENTS.md (local files only)",
+                "ko": "에이전트가 돌아가는 환경 점검: deny 규칙·샌드박스·훅·CI·CLAUDE.md/AGENTS.md (로컬 파일만 읽음)"},
+    "h_project": {"en": "Project folder to check (default: current folder)", "ko": "점검할 프로젝트 폴더 (기본: 현재 폴더)"},
+    "h_json": {"en": "Print JSON instead of text", "ko": "글 대신 JSON 으로 출력"},
+    "setup_head": {"en": "Setup check · {project} · {score}/100", "ko": "환경 점검 · {project} · {score}/100"},
+    "setup_areas": {"en": {"safety": "Safety", "verification": "Verification", "instructions": "Instructions"},
+                    "ko": {"safety": "안전", "verification": "검증", "instructions": "지시 파일"}},
+    "setup_files": {"en": "Read {n} file(s); nothing was sent anywhere.", "ko": "파일 {n}개를 읽었고, 어디로도 보내지 않았습니다."},
+    "setup_fix": {"en": "fix", "ko": "고치기"},
+    "setup_why": {"en": "As the agent steers and approves on its own, guarantees live in the harness and environment. Source: {src}",
+                  "ko": "에이전트가 알아서 판단하고 승인할수록, 보장은 하네스와 환경이 맡아야 합니다. 근거: {src}"},
 }
 
 

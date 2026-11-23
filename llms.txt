@@ -3,12 +3,13 @@
 > agent-coach is an open-source, local-first Python CLI that grades and coaches how you prompt Claude Code and OpenAI Codex, using your own conversation history (~/.claude/projects and ~/.codex/sessions) and a rubric built from Anthropic's and OpenAI's official guides and academies.
 
 What it does:
-- Scores 12 prompting habits (specific context, done criteria and verification, constraints, handing over real material, scope, plan first, stop points, asking for evidence, course correction, moving repeated rules into CLAUDE.md/AGENTS.md, one outcome per conversation, matching model and reasoning effort to the task) on a 0-100 scale, using the model and effort each conversation actually ran on.
+- Scores 13 prompting habits (specific context, done criteria and verification, constraints, handing over real material, scope, plan first, stop points, asking for evidence, course correction, moving repeated rules into CLAUDE.md/AGENTS.md, handing over whole tasks instead of step-by-step spoon-feeding, one outcome per conversation, matching model and reasoning effort to the task) on a 0-100 scale, using the model and effort each conversation actually ran on.
 - Rewrites prompts the user actually typed into better versions, citing the guide section behind each habit.
 - Finds "missed responses": turns where the user didn't get what they wanted, classified as prompt gap, agent error, changed mind or external limit. Short prompts are not penalized when context carried the intent.
 - Groups recurring prompt gaps into one-line rules and says where to put them (CLAUDE.md / AGENTS.md, memory, skill, hook).
 - Saves every run to ~/.agent-coach/history so progress can be tracked over time.
 - Weekly ranking: `agent-coach rank` computes quality x activity bonus over the last 7 days, makes a share card, and can submit numbers only to a public GitHub-based leaderboard (https://1017toa.github.io/agent-coach/leaderboard/).
+- Setup check: `agent-coach setup` statically checks local Claude Code / Codex config (deny rules for secrets, bypassPermissions, sandbox, Stop/TaskCompleted test hooks, hook exit code 2, CI, CLAUDE.md/AGENTS.md without emphatic or discoverable content) with no model or network calls; `--json` for CI.
 - Grades through the user's signed-in `claude` or `codex` CLI (no API key), or offline with keyword heuristics.
 - Masks secrets and contact details before sending anything to the judge. Zero dependencies, Python 3.10+, MIT license. English and Korean.
 
@@ -23,5 +24,5 @@ Codex: codex plugin marketplace add 1017toa/agent-coach && codex plugin add agen
 ## Docs
 - [README](README.md): overview, usage, FAQ
 - [README (Korean)](README.ko.md)
-- [Rubric](agentcoach/rubric/default.json): the 12 habits with official guide citations
+- [Rubric](agentcoach/rubric/default.json): the 13 habits with official guide citations
 - [Contributing](CONTRIBUTING.md)

@@ -225,6 +225,36 @@ def cmd_rank(args) -> None:
         webbrowser.open(issue_url(args.repo, p))
 
 
+def cmd_setup(args) -> None:
+    """Static check of local agent config; no model or network calls."""
+    import json as _json
+    from pathlib import Path
+    from .setup_audit import Setup, audit, score, to_json
+    lang = _lang(args, load_runs())
+    setup = Setup.load(project=Path(args.project) if args.project else None)
+    checks = audit(setup)
+    if args.json:
+        print(_json.dumps(to_json(setup, checks), ensure_ascii=False, indent=1))
+        return
+    sc = score(checks)
+    names = t("setup_areas", lang)
+    print(t("setup_head", lang, project=setup.project.name, score=sc["overall"] if sc["overall"] is not None else "-"))
+    mark = {"pass": "✓", "warn": "!", "fail": "✗", "na": "-"}
+    for area in ("safety", "verification", "instructions"):
+        cs = [c for c in checks if c.area == area]
+        if not cs:
+            continue
+        a = sc["areas"][area]
+        print()
+        print(f"## {names[area]} {a if a is not None else '-'}")
+        for c in cs:
+            print(f"  {mark[c.status]} {c.title.get(lang) or c.title['en']}  ({c.detail.get(lang) or c.detail.get('en', '')})")
+            if c.status in ("warn", "fail"):
+                print(f"      {t('setup_fix', lang)}: {c.fix.get(lang) or c.fix['en']}")
+    print()
+    print(t("setup_files", lang, n=len(setup.settings) + len(setup.memory_files) + (1 if setup.codex_config else 0)))
+
+
 def cmd_history(args) -> None:
     runs = load_runs()
     lang = _lang(args, runs)
@@ -297,6 +327,12 @@ def main(argv=None) -> None:
     sp.add_argument("--repo", default="1017toa/agent-coach", help=argparse.SUPPRESS)
     sp.add_argument("--no-open", action="store_true", help=h("h_noopen"))
     sp.set_defaults(func=cmd_rank)
+
+    sp = sub.add_parser("setup", help=h("h_setup"))
+    sp.add_argument("--project", help=h("h_project"))
+    sp.add_argument("--lang", choices=list(SUPPORTED), help=h("h_lang"))
+    sp.add_argument("--json", action="store_true", help=h("h_json"))
+    sp.set_defaults(func=cmd_setup)
 
     sp = sub.add_parser("history", help=h("h_history"))
     common(sp, window=False)

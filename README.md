@@ -23,20 +23,25 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-dark.png">
-  <img alt="agent-coach report: overall score, the three habits to work on, a radar chart of 12 prompting habits and a weakest-first list" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-light.png" width="900">
+  <img alt="agent-coach report: overall score, the three habits to work on, a radar chart of 13 prompting habits and a weakest-first list" src="https://github.com/1017toa/agent-coach/raw/main/docs/images/overview-light.png" width="900">
 </picture>
 
 <sub>Demo report built from made-up conversations (<code>python scripts/demo_report.py</code>).</sub>
 
 </div>
 
-**agent-coach** is a command-line tool that reads the transcripts Claude Code and OpenAI Codex already save on your machine (`~/.claude/projects`, `~/.codex/sessions`) and scores how you direct the agent on 12 habits taken from the official Anthropic and OpenAI guides and academies. It rewrites prompts you actually typed into better versions, finds the turns where you didn't get what you wanted, and tracks your scores run after run so you can see whether you're improving.
+**agent-coach** is a command-line tool that reads the transcripts Claude Code and OpenAI Codex already save on your machine (`~/.claude/projects`, `~/.codex/sessions`) and scores how you direct the agent on 13 habits taken from the official Anthropic and OpenAI guides and academies. It rewrites prompts you actually typed into better versions, finds the turns where you didn't get what you wanted, and tracks your scores run after run so you can see whether you're improving. `agent-coach setup` also checks the setup the agent runs in: deny rules, sandbox, hooks, CI and your `CLAUDE.md` / `AGENTS.md`.
 
 ## Quick start
 
 ```bash
+uvx --from agent-coach-cli agent-coach run    # try it without installing (or: pipx run --spec agent-coach-cli agent-coach run)
+```
+
+```bash
 pipx install agent-coach-cli    # or: uv tool install agent-coach-cli · pip install agent-coach-cli
-agent-coach run
+agent-coach run                 # grade your prompting
+agent-coach setup               # check your setup (no model calls)
 ```
 
 The package on PyPI is `agent-coach-cli`; the command it installs is `agent-coach`. `run` grades your recent conversations through the `claude` or `codex` CLI you're already signed in to, saves the result and opens an HTML report. No API key, no server, no dependencies. Want to look before grading anything? `agent-coach scan` lists what would be graded, without calling a model.
@@ -65,6 +70,7 @@ Then ask Codex to "grade my prompting with agent-coach". The skill previews what
 - **Rewrites of your real prompts.** "You wrote this; this would have worked better, because…", not generic tips.
 - **Short prompts aren't penalized.** In a long conversation, "ok do it" is often all you need. Coaching targets turns that actually missed, and only when the cause was a gap in your prompt.
 - **Finds rules worth writing down.** Gaps that recur across conversations become one-line rules, with where to put them: `CLAUDE.md` / `AGENTS.md`, memory, a skill, or a hook.
+- **Checks your setup, not just your prompts.** As agents steer and approve on their own, guarantees move into the harness: deny rules for secrets, hooks that send the agent back when tests fail (exit code 2), a sandbox, CI. `agent-coach setup` checks them from local files in a second.
 - **Tracks progress.** Each run is saved under `~/.agent-coach/history/`, so your trend survives after the tools delete old transcripts.
 - **Claude Code and Codex on one scale**, in one report.
 - **Private by default.** Secrets and contact details are masked before anything reaches the judge, and results stay on your machine.
@@ -88,7 +94,7 @@ Judge: `claude` CLI, `codex` CLI, or offline keyword scoring (`--judge heuristic
   │
   ● redact     keys, emails, phone / ID / card numbers, addresses, names you list
   │
-  ● judge      one call per conversation via your claude / codex CLI, rubric v3 (12 habits)
+  ● judge      one call per conversation via your claude / codex CLI, rubric v4 (13 habits)
   │
   ● save       ~/.agent-coach/history/run-*.json
   │
@@ -97,7 +103,7 @@ Judge: `claude` CLI, `codex` CLI, or offline keyword scoring (`--judge heuristic
 
 ## What it grades
 
-Twelve habits, each scored 0 / 1 / 2 only in the conversations where it mattered, averaged to 0–100.
+Thirteen habits, each scored 0 / 1 / 2 only in the conversations where it mattered, averaged to 0–100.
 
 | Habit | What the guides recommend |
 |---|---|
@@ -109,8 +115,9 @@ Twelve habits, each scored 0 / 1 / 2 only in the conversations where it mattered
 | Plan or interview first | For big or fuzzy work, plan or get interviewed before building |
 | Stop points and working style | How far to go alone, where to stop and ask, how to report |
 | Ask for evidence, review the result | Commands, output, diff; a fresh session to review |
-| Course correction | After two failed corrections, start fresh with a better prompt |
-| Move repeated rules into files | Put recurring rules in CLAUDE.md, AGENTS.md or a skill |
+| Course correction | Correct rarely and early; after two failed corrections, start fresh with a better prompt |
+| Move repeated rules into files | Only what the agent can't see from the code goes in CLAUDE.md / AGENTS.md, written plainly; rules with no exceptions become hooks or deny rules |
+| Hand over whole tasks, then step back | One complete request with its finish line instead of step-by-step spoon-feeding; long work in background, cloud or parallel sessions |
 | One outcome per conversation | New work in a new conversation; tidy long ones |
 | Model and effort choice | Match model and reasoning effort to the work, judged from what each conversation actually ran on |
 
@@ -135,6 +142,7 @@ agent-coach scan        # preview which conversations would be graded (no model 
 agent-coach run         # grade → save the run → open the report
 agent-coach rank        # weekly score, share card, optional leaderboard submission
 agent-coach summary     # latest run as text: weakest habits, rewrites, rules to add
+agent-coach setup       # check deny rules, sandbox, hooks, CI and CLAUDE.md / AGENTS.md (add --json for CI)
 agent-coach history     # score table per run
 agent-coach report      # rebuild the report from saved runs
 ```
@@ -152,6 +160,18 @@ agent-coach report      # rebuild the report from saved runs
 From a checkout without installing: `python -m agentcoach run`. Latest development version: `pip install git+https://github.com/1017toa/agent-coach.git`.
 
 **Grade on a schedule.** Run `agent-coach run` every week or two; each run grades only what's new and adds to the trend. Claude Code deletes transcripts older than 30 days by default, so keep the interval shorter than that.
+
+## Setup check
+
+Prompts are half of it. With auto mode approving commands and the model steering itself, what keeps a long unattended run safe and correct is the setup around it. `agent-coach setup` reads your local config (nothing is sent anywhere, no model calls) and scores three areas:
+
+| Area | What it checks |
+|---|---|
+| Safety | A deny rule for `.env` and SSH keys (deny rules apply before auto mode's classifier), not running in `bypassPermissions`, the sandbox (macOS, Linux, WSL2), Codex `sandbox_mode` |
+| Verification | A Stop / TaskCompleted hook that runs tests, a lint hook after edits, hook scripts that exit with code 2 on failure (exit 1 lets the task finish anyway), CI in the repo |
+| Instructions | `CLAUDE.md` / `AGENTS.md` without piled-up IMPORTANT / NEVER / !!!, without stack and folder-layout sections the agent can read from the code, and short |
+
+Each warning comes with the fix and the doc it's based on. Run it in a project folder, or pass `--project PATH`; `--json` prints machine-readable output for CI.
 
 ## Weekly ranking
 
@@ -212,9 +232,9 @@ Not yet; Claude Code and Codex only. Support for more tools is on the roadmap, a
 
 ## Sources
 
-The default rubric (v3) is built from:
+The default rubric (v4) and the setup check are built from:
 
-- **Anthropic**: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Model configuration](https://code.claude.com/docs/en/model-config), [Prompting Claude Fable 5.2](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)
+- **Anthropic**: [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), [Model configuration](https://code.claude.com/docs/en/model-config), [Prompting Claude Fable 5.2](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/), [Permission modes](https://code.claude.com/docs/en/permission-modes), [Sandboxing](https://code.claude.com/docs/en/sandboxing), [Hooks](https://code.claude.com/docs/en/hooks), [Memory](https://code.claude.com/docs/en/memory), [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web), [Claude projects](https://code.claude.com/docs/en/claude-projects)
 - **Claude Academy**: [AI Fluency: Framework & Foundations](https://academy.claude.com/courses/ai-fluency-framework-foundations), [Claude Code 101](https://academy.claude.com/courses/claude-code-101), [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action), [Claude 101](https://academy.claude.com/courses/claude-101)
 - **OpenAI**: [Codex Best practices](https://learn.chatgpt.com/guides/best-practices), [Codex Prompting](https://learn.chatgpt.com/docs/prompting), [GPT-5.6 prompt guidance](https://developers.openai.com/api/docs/guides/prompt-guidance-gpt-5p6)
 - **OpenAI Academy**: [Get Started with Codex](https://academy.openai.com/public/courses/get-started-with-codex-jkhsq), [Agents and Workflows](https://academy.openai.com/public/courses/agents-and-workflows-y0qoc), [Extend Codex Workflows](https://academy.openai.com/public/courses/extend-codex-workflows-4e61p) (free with sign-in; the rubric cites specific lessons, such as the four-part task brief, Plan Mode, validation and handoff, delegation contracts and AGENTS.md)
@@ -223,6 +243,10 @@ When the rubric changes, earlier runs have no score for new habits and the repor
 
 ## Roadmap
 
+- Statusline with your current tier and one tip a day
+- README badge (SVG) that keeps your tier visible on your profile
+- Monthly / yearly "wrapped" card
+- GitHub Action that runs `agent-coach setup --json` on pull requests
 - Anonymized aggregate export for courses and teams
 - Example custom rubrics
 - Cursor and Gemini CLI transcripts

@@ -145,8 +145,8 @@ def main():
     ap.add_argument("-o", "--out", default="demo-report.html")
     a = ap.parse_args()
     rubric = load_rubric(lang=a.lang)
-    runs = [make_run(rubric, "2026-10-30T09:00:00+00:00", [48, 22, 41, 70, 45, 30, 35, 50, 72, 60, 38, 55], 1),
-            make_run(rubric, "2026-11-13T09:00:00+00:00", [64, 41, 55, 83, 58, 49, 47, 63, 80, 78, 52, 70], 2)]
+    runs = [make_run(rubric, "2026-10-30T09:00:00+00:00", [48, 22, 41, 70, 45, 30, 35, 50, 72, 60, 33, 38, 55], 1),
+            make_run(rubric, "2026-11-13T09:00:00+00:00", [64, 41, 55, 83, 58, 49, 47, 63, 80, 78, 51, 52, 70], 2)]
     Path(a.out).write_text(render(runs, rubric), encoding="utf-8")
     print(a.out)
 

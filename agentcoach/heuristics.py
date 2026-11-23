@@ -32,6 +32,9 @@ MISS_SIG = [
 RECORD = R(r"(CLAUDE\.md|AGENTS\.md|메모리|기억해|규칙(으로|에)|스킬|skill|훅|hook|memory)")
 
 
+MICRO = R(r"(이제|그럼|다음[은엔]?|그 ?다음|이번엔|now\b|next\b|then\b|ok now\b)")
+
+
 def _task_prompts(s: Session) -> list:
     """Turns that start or substantially reframe work (long enough to carry a spec)."""
     out = [t for t in s.turns if not t.slash and (t.index == 1 or len(t.text) >= 60)]
@@ -99,6 +102,10 @@ def score_session(s: Session, rubric: dict) -> dict:
         dims["reusable_guidance"] = 2
     else:
         dims["reusable_guidance"] = 0 if len(durable_turns) >= 3 else 1
+
+    # spoon-feeding: a chain of tiny "now do X" turns for work one complete request would cover
+    micro = sum(1 for t in typed[1:] if len(t.text.strip()) < 40 and MICRO.match(t.text.strip()))
+    dims["delegation"] = (0 if micro >= 3 else 1 if micro >= 1 else 2) if actionable and len(typed) >= 4 else None
 
     resets = sum(1 for t in s.turns if t.slash in ("/clear", "/compact", "/new", "/fork"))
     if len(typed) < 15:

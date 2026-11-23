@@ -43,6 +43,10 @@ Run `agent-coach summary` (add `--lang`). From its output, tell the user:
 
 Finish with the report path it printed (`~/.agent-coach/report.html`) and offer to open it. Suggest running this again in a week or two; only new conversations are graded and the trend builds up.
 
+## 5. Check the setup (optional, fast)
+
+If the user asks about their setup, safety, hooks or CLAUDE.md, or after coaching when the weakest habits are about verification or rules, run `agent-coach setup` in the project folder (add `--lang`). It reads local config only and calls no model. Relay the failed and warned checks with their fixes, and offer to apply a fix (for example a deny rule or a hook) only after the user says yes; settings files are the user's to change.
+
 Other commands: `agent-coach history` (score table per run), `agent-coach report` (rebuild the HTML), `agent-coach rank` (weekly score and share card; add `--nickname <name> --submit` only when the user asks to join the public leaderboard, since it opens a GitHub issue for them to send).
 
 ## Privacy
